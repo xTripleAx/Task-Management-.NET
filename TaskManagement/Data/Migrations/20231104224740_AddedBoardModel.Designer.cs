@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagement.Data;
 
@@ -11,9 +12,11 @@ using TaskManagement.Data;
 namespace TaskManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231104224740_AddedBoardModel")]
+    partial class AddedBoardModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,31 +245,6 @@ namespace TaskManagement.Data.Migrations
                     b.ToTable("Boards");
                 });
 
-            modelBuilder.Entity("TaskManagement.Models.List", b =>
-                {
-                    b.Property<int>("ListId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ListId"));
-
-                    b.Property<int>("BoardId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ColumnLimit")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ListId");
-
-                    b.HasIndex("BoardId");
-
-                    b.ToTable("Lists");
-                });
-
             modelBuilder.Entity("TaskManagement.Models.Project", b =>
                 {
                     b.Property<int>("ProjectId")
@@ -358,17 +336,6 @@ namespace TaskManagement.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Project");
-                });
-
-            modelBuilder.Entity("TaskManagement.Models.List", b =>
-                {
-                    b.HasOne("TaskManagement.Models.Board", "Board")
-                        .WithMany()
-                        .HasForeignKey("BoardId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Board");
                 });
 
             modelBuilder.Entity("TaskManagement.Models.Project", b =>

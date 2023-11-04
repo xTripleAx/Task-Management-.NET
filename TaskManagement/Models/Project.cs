@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagement.Models
 {
@@ -10,8 +11,7 @@ namespace TaskManagement.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime DateCreated { get; set; }
-        public int CreatorId {  get; set; }
-        public User Creator { get; set; }
-
+        public string CreatorId {  get; set; }
+        public IdentityUser Creator { get; set; }
     }
 }

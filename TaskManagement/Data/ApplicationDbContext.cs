@@ -10,10 +10,8 @@ namespace TaskManagement.Data
             : base(options)
         {
         }
-        public DbSet<User> Users {  get; set; }
         public DbSet<Project> Projects { get; set; }
-
-        public DbSet<Kanban> KanbanProjects { get; set;}
-        public DbSet<Scrum> scrums { get; set; }
+        public DbSet<Board> Boards { get; set; }
+        public DbSet<List> Lists { get; set; }
     }
 }
