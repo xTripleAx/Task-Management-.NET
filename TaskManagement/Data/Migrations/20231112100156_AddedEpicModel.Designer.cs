@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagement.Data;
 
@@ -11,9 +12,11 @@ using TaskManagement.Data;
 namespace TaskManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231112100156_AddedEpicModel")]
+    partial class AddedEpicModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -242,37 +245,6 @@ namespace TaskManagement.Data.Migrations
                     b.ToTable("Boards");
                 });
 
-            modelBuilder.Entity("TaskManagement.Models.Comment", b =>
-                {
-                    b.Property<int>("CommentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentId"));
-
-                    b.Property<string>("CommentorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("IssueId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("PostedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("CommentId");
-
-                    b.HasIndex("CommentorId");
-
-                    b.HasIndex("IssueId");
-
-                    b.ToTable("Comments");
-                });
-
             modelBuilder.Entity("TaskManagement.Models.Epic", b =>
                 {
                     b.Property<int>("EpicId")
@@ -293,47 +265,6 @@ namespace TaskManagement.Data.Migrations
                     b.HasIndex("BoardId");
 
                     b.ToTable("Epics");
-                });
-
-            modelBuilder.Entity("TaskManagement.Models.Issue", b =>
-                {
-                    b.Property<int>("IssueId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IssueId"));
-
-                    b.Property<string>("AssigneeId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("IssueDescription")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IssueName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReporterId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<bool?>("blockedBy")
-                        .HasColumnType("bit");
-
-                    b.Property<bool?>("blocks")
-                        .HasColumnType("bit");
-
-                    b.HasKey("IssueId");
-
-                    b.HasIndex("AssigneeId");
-
-                    b.HasIndex("ReporterId");
-
-                    b.ToTable("Issues");
                 });
 
             modelBuilder.Entity("TaskManagement.Models.List", b =>
@@ -454,25 +385,6 @@ namespace TaskManagement.Data.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("TaskManagement.Models.Comment", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Commentor")
-                        .WithMany()
-                        .HasForeignKey("CommentorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskManagement.Models.Issue", "Issue")
-                        .WithMany()
-                        .HasForeignKey("IssueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Commentor");
-
-                    b.Navigation("Issue");
-                });
-
             modelBuilder.Entity("TaskManagement.Models.Epic", b =>
                 {
                     b.HasOne("TaskManagement.Models.Board", "Board")
@@ -482,23 +394,6 @@ namespace TaskManagement.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Board");
-                });
-
-            modelBuilder.Entity("TaskManagement.Models.Issue", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Assignee")
-                        .WithMany()
-                        .HasForeignKey("AssigneeId");
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Reporter")
-                        .WithMany()
-                        .HasForeignKey("ReporterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Assignee");
-
-                    b.Navigation("Reporter");
                 });
 
             modelBuilder.Entity("TaskManagement.Models.List", b =>
