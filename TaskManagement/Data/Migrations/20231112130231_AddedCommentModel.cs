@@ -30,7 +30,7 @@ namespace TaskManagement.Data.Migrations
                         column: x => x.CommentorId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                     table.ForeignKey(
                         name: "FK_Comments_Issues_IssueId",
                         column: x => x.IssueId,
