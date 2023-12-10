@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagement.Models
 {
     public class Comment
     {
+        [Key]
         public int CommentId { get; set; }
         public string Content { get; set; }
         public int IssueId { get; set; }

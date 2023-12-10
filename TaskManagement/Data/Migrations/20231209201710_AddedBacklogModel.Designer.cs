@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagement.Data;
 
@@ -11,9 +12,11 @@ using TaskManagement.Data;
 namespace TaskManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231209201710_AddedBacklogModel")]
+    partial class AddedBacklogModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -441,34 +444,6 @@ namespace TaskManagement.Data.Migrations
                     b.ToTable("ProjectTypes");
                 });
 
-            modelBuilder.Entity("TaskManagement.Models.Sprint", b =>
-                {
-                    b.Property<int>("SprintId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SprintId"));
-
-                    b.Property<int>("BacklogId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("SprintEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SprintName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("SprintStart")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("SprintId");
-
-                    b.HasIndex("BacklogId");
-
-                    b.ToTable("Sprints");
-                });
-
             modelBuilder.Entity("TaskManagement.Models.UserProject", b =>
                 {
                     b.Property<string>("CompositeKey")
@@ -646,17 +621,6 @@ namespace TaskManagement.Data.Migrations
                     b.Navigation("Creator");
 
                     b.Navigation("ProjectType");
-                });
-
-            modelBuilder.Entity("TaskManagement.Models.Sprint", b =>
-                {
-                    b.HasOne("TaskManagement.Models.Backlog", "Backlog")
-                        .WithMany()
-                        .HasForeignKey("BacklogId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Backlog");
                 });
 
             modelBuilder.Entity("TaskManagement.Models.UserProject", b =>
