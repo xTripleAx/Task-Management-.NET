@@ -18,4 +18,8 @@
     <PackageReference Include="ServiceStack.Interfaces" Version="6.11.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Views\Issue\" />
+  </ItemGroup>
+
 </Project>

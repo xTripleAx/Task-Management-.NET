@@ -2,6 +2,7 @@
 
 namespace TaskManagement.Models
 {
+    //A class for project types that are static in the database
     public class ProjectTypes
     {
         [Key]

@@ -10,10 +10,10 @@ namespace TaskManagement.Models
         [StringLength(50)]
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime DateCreated { get; set; }
-        public string CreatorId {  get; set; }
-        public IdentityUser Creator { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public string? CreatorId {  get; set; }
+        public IdentityUser? Creator { get; set; }
         public int ProjectTypeId { get; set; }
-        public ProjectTypes ProjectType { get; set; }
+        public ProjectTypes? ProjectType { get; set; }
     }
 }
