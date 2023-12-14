@@ -1,0 +1,71 @@
+﻿@model TaskManagement.Models.Issue
+
+@{
+    ViewData["Title"] = "IssueForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>IssueForm</h1>
+
+<h4>Issue</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Save" asp-controller="Issue" class="needs-validation" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="IssueName" class="control-label"></label>
+                <input asp-for="IssueName" class="form-control" />
+                <span asp-validation-for="IssueName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IssueDescription" class="control-label"></label>
+                <input asp-for="IssueDescription" class="form-control" />
+                <span asp-validation-for="IssueDescription" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IssueStatus" class="control-label"></label>
+                <input asp-for="IssueStatus" class="form-control" />
+                <span asp-validation-for="IssueStatus" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateCreated" class="control-label"></label>
+                <input asp-for="DateCreated" class="form-control" />
+                <span asp-validation-for="DateCreated" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="blocks" class="control-label"></label>
+                <input asp-for="blocks" class="form-control" />
+                <span asp-validation-for="blocks" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="blockedBy" class="control-label"></label>
+                <input asp-for="blockedBy" class="form-control" />
+                <span asp-validation-for="blockedBy" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReporterId" class="control-label"></label>
+                <select asp-for="ReporterId" class ="form-control" asp-items="ViewBag.ReporterId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="ListId" class="control-label"></label>
+                <select asp-for="ListId" class ="form-control" asp-items="ViewBag.ListId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="AssigneeId" class="control-label"></label>
+                <select asp-for="AssigneeId" class ="form-control" asp-items="ViewBag.AssigneeId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TaskManagement.Data;
 using TaskManagement.Models;
@@ -6,6 +7,8 @@ using TaskManagement.Models.ViewModels;
 
 namespace TaskManagement.Controllers
 {
+    [Authorize]
+    [Route("List")]
     public class ListController : Controller
     {
 
@@ -16,6 +19,7 @@ namespace TaskManagement.Controllers
             _context = context;
         }
 
+        [Route("Create/{boardid}")]
         public IActionResult Create(int boardid)
         {
             var board = _context.Boards.Find(boardid);
@@ -34,6 +38,7 @@ namespace TaskManagement.Controllers
         }
 
 
+        [Route("Edit/{boardid}")]
         public IActionResult Edit(int listid, int boardid)
         {
             var list = _context.Lists.FirstOrDefault(l => l.ListId == listid && l.BoardId == boardid);
@@ -55,7 +60,7 @@ namespace TaskManagement.Controllers
             if (!ModelState.IsValid)
             {
                 //if not valid redirect to the form with posted data
-                return View("ListForm", list);
+                return RedirectToAction("Privacy","Home");
             }
 
             //checking if the List is new or old
@@ -63,8 +68,6 @@ namespace TaskManagement.Controllers
             {
                 //if new add project
                 _context.Lists.Add(list);
-                _context.SaveChanges();
-
                 _context.SaveChanges();
             }
             else

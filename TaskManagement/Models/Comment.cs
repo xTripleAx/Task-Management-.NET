@@ -12,7 +12,7 @@ namespace TaskManagement.Models
         public Issue Issue { get; set; }
         public string CommentorId { get; set; }
         public IdentityUser Commentor { get; set; }
-        public DateTime PostedAt { get; set; }
+        public DateTime? PostedAt { get; set; }
     }
 
 }
