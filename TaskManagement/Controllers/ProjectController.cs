@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -12,12 +13,55 @@ namespace TaskManagement.Controllers
     public class ProjectController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _usermanager; 
 
-        public ProjectController(ApplicationDbContext context)
+        public ProjectController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
+
+        public JsonResult GetProjectsByUserId(string userid)
+        {
+            try
+            {
+                string userId = _usermanager.GetUserId(User);
+
+                // Get the project IDs where the user is a member
+                var memberProjectsIds = _context.UserProjects
+                    .Where(up => up.UserId == userId)
+                    .Select(up => up.ProjectId)
+                    .ToList();
+
+                // Get projects where the user is the creator or a member, including creator names
+                var projects = _context.Projects
+                    .Where(p => p.CreatorId == userId || memberProjectsIds.Contains(p.ProjectId))
+                    .Select(p => new
+                    {
+                        ProjectId = p.ProjectId,
+                        ProjectName = p.Name,
+                        Description = p.Description,
+                        DateCreated = p.DateCreated,
+                        CreatorId = p.CreatorId,
+                        Creator = new
+                        {
+                            UserId = p.Creator.Id,
+                            UserName = p.Creator.UserName,
+                        },
+                        ProjectTypeId = p.ProjectTypeId,
+                        ProjectType = p.ProjectType
+                    })
+                    .ToList();
+
+                return Json(projects);
+            }
+            catch (Exception ex)
+            {
+                // Handle exception (log it, return a specific error response, etc.)
+                return Json(new { error = "An error occurred while fetching projects." });
+            }
+        }
 
         public IActionResult Create()
         {
