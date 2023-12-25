@@ -3,13 +3,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 using TaskManagement.Data;
 using TaskManagement.Models;
 using TaskManagement.Models.ViewModels;
 
 namespace TaskManagement.Controllers
 {
-    [Authorize]
+
+    [Route("Project")]
     public class ProjectController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,8 +23,15 @@ namespace TaskManagement.Controllers
             _usermanager = userManager;
         }
 
+        [HttpGet("All")]
+        public IActionResult AllProjects()
+        {
+            return View();
+        }
 
-        public JsonResult GetProjectsByUserId(string userid)
+
+        [HttpGet("GetProjectsByUserId")]
+        public JsonResult GetProjectsByUserId()
         {
             try
             {
@@ -63,6 +72,8 @@ namespace TaskManagement.Controllers
             }
         }
 
+
+        [HttpGet("Create")]
         public IActionResult Create()
         {
             //Initializing a viewmodel to give to the view
@@ -76,6 +87,7 @@ namespace TaskManagement.Controllers
         }
 
 
+        [HttpGet("Edit/{id}")]
         public IActionResult Edit(int id)
         {
             //Checking if project exists in database
@@ -93,7 +105,7 @@ namespace TaskManagement.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("Save")]
         [ValidateAntiForgeryToken]
         public IActionResult Save(Project project)
         {
@@ -169,7 +181,7 @@ namespace TaskManagement.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("Delete/{id}")]
         [ValidateAntiForgeryToken]
         public IActionResult Delete(int id)
         {

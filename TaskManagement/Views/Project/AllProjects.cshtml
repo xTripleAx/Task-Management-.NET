@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
-
+@{
+    Layout = "_LoggedInLayout";
+}
 
 <h1 class="m-2">Your Projects:</h1>
 
@@ -26,7 +28,6 @@
                     url: '/Project/GetProjectsByUserId',
                     type: 'GET', 
                     dataType: 'json',
-                    data: { userid: '@(SignInManager.UserManager.GetUserId(User))' }, // Replace with the actual user ID
                     dataSrc: ''
                 },
                 columns: [

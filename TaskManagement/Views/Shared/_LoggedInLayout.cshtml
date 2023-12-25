@@ -21,10 +21,18 @@
         </button>
     </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+    <div class="container-fluid">
+        <div class="row flex-nowrap">
+            <div class="bg-light col-md-2 collapse show" id="sidebar">
+                <partial name="_SideBarPartial" />
+            </div>
+
+            <div class="container col-md-10">
+                <main role="main" class="pb-3">
+                    @RenderBody()
+                </main>
+            </div>
+        </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
