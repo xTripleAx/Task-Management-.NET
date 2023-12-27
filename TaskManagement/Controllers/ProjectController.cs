@@ -23,6 +23,7 @@ namespace TaskManagement.Controllers
             _usermanager = userManager;
         }
 
+
         [HttpGet("All")]
         public IActionResult AllProjects()
         {
@@ -127,34 +128,18 @@ namespace TaskManagement.Controllers
             {
                 project.CreatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 project.DateCreated = DateTime.Now;
-                //if new add project
-                _context.Projects.Add(project);
-                _context.SaveChanges();
 
-                //Creating a board or a board and a backlog according to the project type
-                project.ProjectType = _context.ProjectTypes.Find(project.ProjectTypeId);
-                if (project.ProjectType.ProjecTypetName == "Kanban")
+                var board = new Board
                 {
-                    var board = new Board
-                    {
-                        ProjectId = project.ProjectId
-                    };
-                    _context.Boards.Add(board);
-                }
-                else if (project.ProjectType.ProjecTypetName == "Scrum")
-                {
-                    var board = new Board
-                    {
-                        ProjectId = project.ProjectId
-                    };
-                    _context.Boards.Add(board);
+                    Project = project
+                };
+                _context.Boards.Add(board);
 
-                    var backlog = new Backlog
-                    {
-                        ProjectId = project.ProjectId
-                    };
-                    _context.Backlogs.Add(backlog);
-                }
+                var backlog = new Backlog
+                {
+                    Project = project
+                };
+                _context.Backlogs.Add(backlog);
 
                 _context.SaveChanges();
             }
@@ -178,6 +163,13 @@ namespace TaskManagement.Controllers
             }
 
             return RedirectToAction(nameof(Index), nameof(HomeController));
+        }
+
+
+        [HttpGet("Board")]
+        public IActionResult ProjectBoard(int projectid)
+        {
+
         }
 
 

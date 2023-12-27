@@ -1,32 +1,59 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
 @{
-    Layout = "_LoggedInLayout";
+    Layout = "_Layout";
 }
 
-<h1 class="m-2">Your Projects:</h1>
 
-<a class="btn btn-primary m-2" href="/Project/Create">Create A Project!</a>
+<div class="container">
+    <h1 class="mb-4">Your Projects</h1>
 
-<table id="Projects" class="table">
-    <thead>
-        <tr>
-            <th>Project Name</th>
-            <th>Date Created</th>
-            <th>Creator</th>
-            <th>Delete</th>
-        </tr>
-    </thead>
+    <a class="btn btn-primary mb-4" href="/Project/Create">Create A Project</a>
 
-</table>
+    <div class="card">
+        <div class="card-body">
+            <table id="Projects" class="table table-striped responsive">
+                <thead>
+                    <tr>
+                        <th>Project Name</th>
+                        <th>Date Created</th>
+                        <th>Creator</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete this project?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="CancelOperation">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section scripts {
     <script>
         $(document).ready(function () {
             var table = $('#Projects').DataTable({
+                responsive: true,
                 ajax: {
                     url: '/Project/GetProjectsByUserId',
-                    type: 'GET', 
+                    type: 'GET',
                     dataType: 'json',
                     dataSrc: ''
                 },
@@ -34,11 +61,11 @@
                     {
                         data: 'projectName',
                         render: function (data, type, project) {
-                            return '<a href="/project/edit/' + project.ProjectId + '">' + data + ' </a>';
+                            return '<a href="/project/board" data-projectid="' + project.ProjectId + '" class="text-decoration-none">' + data + ' </a>';
                         }
                     },
-                    { 
-                        data: 'dateCreated' ,
+                    {
+                        data: 'dateCreated',
                         render: function (data, type) {
                             var date = new Date(data);
                             var day = date.getDate().toString().padStart(2, '0');
@@ -47,7 +74,7 @@
                             return day + '-' + month + '-' + year;
                         }
                     },
-                    { 
+                    {
                         data: 'creator',
                         render: function (data, type) {
                             return data.userName;
@@ -60,27 +87,31 @@
                             return '<button class="btn btn-danger js-delete" data-projectid="' + data + '">Delete</button>';
                         }
                     }
-                ]
+                ],
             });
 
             $("#Projects").on('click', ".js-delete", function () {
                 var button = $(this);
-                bootbox.confirm('Are you sure you want to delete this project?', function (result) {
-                    if (result) {
-                        $.ajax({
-                            url: '/Project/DeleteProjectById/' + button.data('projectid'),
-                            method: 'DELETE',
-                            success: function () {
-                                alert('Delete Succeeded');
-                                table.row(button.parents('tr')).remove().draw()
-                            }
-                        });
-                    }
-                });
+                $('#deleteConfirmationModal').modal('show');
 
+                $('#confirmDeleteBtn').on('click', function () {
+                    $('#deleteConfirmationModal').modal('hide');
+
+                    $.ajax({
+                        url: '/Project/DeleteProjectById/' + button.data('projectid'),
+                        method: 'DELETE',
+                        success: function () {
+                            alert('Delete Succeeded');
+                            table.row(button.parents('tr')).remove().draw();
+                        }
+                    });
+                });
+            });
+
+            $('#deleteConfirmationModal').on('click', '#CancelOperation', function () {
+                $('#deleteConfirmationModal').modal('hide');
             });
 
         });
-
     </script>
 }

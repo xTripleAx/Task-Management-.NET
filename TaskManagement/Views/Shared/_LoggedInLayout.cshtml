@@ -8,40 +8,38 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TaskManagement.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/lib/datatables/css/dataTables.bootstrap4.min.css" />
+    <link rel="stylesheet" href="~/lib/datatables/css/datatables.bootstrap4.css" />
     <link rel="stylesheet" href="~/lib/fontawesome/all.min.css" />
+    <link rel="stylesheet" href="~/MyFiles/css/Sidebar.css" />
 
 </head>
 <body id="body-pd">
 
     <header>
         <partial name="_NavbarPartial" />
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-controls="sidebar" aria-expanded="false" aria-label="Toggle sidebar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
     </header>
 
     <div class="container-fluid">
-        <div class="row flex-nowrap">
-            <div class="bg-light col-md-2 collapse show" id="sidebar">
-                <partial name="_SideBarPartial" />
-            </div>
-
-            <div class="container col-md-10">
-                <main role="main" class="pb-3">
-                    @RenderBody()
-                </main>
-            </div>
+    <div class="row flex-nowrap">
+        <div class="bg-light col-md-2" id="sidebar" style="height: auto;">
+            <partial name="_SideBarPartial" />
         </div>
+
+        <div class="col-md-10" id="content">
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib//datatables/js/jquery.dataTables.min.js"></script>
-    <script src="~/lib/datatables/js/dataTables.bootstrap4.min.js"></script>
+    <script src="~/lib/datatables/js/jquery.datatables.js"></script>
+    <script src="~/lib/datatables/js/dataTables.bootstrap4.js"></script>
     <script src="~/lib/bootbox.js/bootbox.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/SideBar.js"></script>
+    <script src="~/MyFiles/js/Sidebar.js"></script>
     <script src="~/lib/fontawesome/all.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

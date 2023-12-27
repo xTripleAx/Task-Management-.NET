@@ -1,0 +1,53 @@
+﻿@{
+    Layout = "_LoggedInLayout";
+}
+
+<h1 class="m-2">Projects Name</h1>
+
+<div class="board">
+
+    <div class="row m-2">
+        <div class="col-sm-3 me-3 p-2 bg-dark text-light rounded-3">
+            <h3 class="LaneHeading">To Do</h3>
+
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">1</a>
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">2</a>
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">3</a>
+        </div>        
+        
+        <div class="col-sm-3 me-3 p-2 bg-dark text-light rounded-3">
+            <h3 class="LaneHeading">Doing</h3>
+
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block text-decoration-none" draggable="true">Writing the first page</a>
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">2</a>
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">3</a>
+        </div>        
+        
+        <div class="col-sm-3 me-3 p-2 bg-dark text-light rounded-3">
+            <h3 class="LaneHeading">Done</h3>
+
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">1</a>
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">2</a>
+            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">3</a>
+        </div>
+
+    </div>
+
+    <div class="dropdown m-2">
+        <button class="btn btn-sm btn-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Create
+        </button>
+        <div class="dropdown-menu scrollable-dropdown-actions-button" aria-labelledby="dropdownMenuButton">
+            <a class="dropdown-item" href="#">
+                Create Issue
+            </a>
+            <a class="dropdown-item" href="#">
+                Create List
+            </a>
+        </div>
+    </div>
+
+
+</div>
+
+<script src="~/lib/popper.js/umd/popper.min.js"></script>

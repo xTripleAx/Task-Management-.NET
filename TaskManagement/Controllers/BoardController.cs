@@ -27,5 +27,17 @@ namespace TaskManagement.Controllers
 
             return View("BoardDetails");
         }
+
+
+        public JsonResult GetBoardByProjectId(int projectid)
+        {
+            var boardExists = _context.Boards.FirstOrDefault(b => b.ProjectId == projectid);
+
+            if (boardExists != null)
+            {
+
+            }
+            return Json(new{ success = true });
+        }
     }
 }
