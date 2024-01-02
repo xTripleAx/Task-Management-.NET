@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagement.Data;
 
@@ -11,9 +12,11 @@ using TaskManagement.Data;
 namespace TaskManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231231170709_FixedUserRelations")]
+    partial class FixedUserRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -378,10 +381,9 @@ namespace TaskManagement.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectId"));
 
                     b.Property<string>("CreatorId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<DateTime?>("DateCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -443,9 +445,6 @@ namespace TaskManagement.Data.Migrations
                     b.Property<DateTime>("SprintStart")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("isActive")
-                        .HasColumnType("bit");
-
                     b.HasKey("SprintId");
 
                     b.HasIndex("BacklogId");
@@ -455,13 +454,19 @@ namespace TaskManagement.Data.Migrations
 
             modelBuilder.Entity("TaskManagement.Models.UserProject", b =>
                 {
+                    b.Property<string>("CompositeKey")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("MemberId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
-                    b.HasKey("MemberId", "ProjectId");
+                    b.HasKey("CompositeKey");
+
+                    b.HasIndex("MemberId");
 
                     b.HasIndex("ProjectId");
 
@@ -600,9 +605,7 @@ namespace TaskManagement.Data.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Creator")
                         .WithMany()
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CreatorId");
 
                     b.HasOne("TaskManagement.Models.ProjectTypes", "ProjectType")
                         .WithMany("projects")

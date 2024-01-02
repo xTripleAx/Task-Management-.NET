@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskManagement.Data;
 
@@ -11,9 +12,11 @@ using TaskManagement.Data;
 namespace TaskManagement.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20231231164350_Fixed Models Relations")]
+    partial class FixedModelsRelations
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -86,6 +89,10 @@ namespace TaskManagement.Data.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -137,6 +144,10 @@ namespace TaskManagement.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -378,10 +389,9 @@ namespace TaskManagement.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProjectId"));
 
                     b.Property<string>("CreatorId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime>("DateCreated")
+                    b.Property<DateTime?>("DateCreated")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
@@ -443,9 +453,6 @@ namespace TaskManagement.Data.Migrations
                     b.Property<DateTime>("SprintStart")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("isActive")
-                        .HasColumnType("bit");
-
                     b.HasKey("SprintId");
 
                     b.HasIndex("BacklogId");
@@ -455,17 +462,35 @@ namespace TaskManagement.Data.Migrations
 
             modelBuilder.Entity("TaskManagement.Models.UserProject", b =>
                 {
+                    b.Property<string>("CompositeKey")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("MemberId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
-                    b.HasKey("MemberId", "ProjectId");
+                    b.HasKey("CompositeKey");
+
+                    b.HasIndex("MemberId");
 
                     b.HasIndex("ProjectId");
 
                     b.ToTable("UserProjects");
+                });
+
+            modelBuilder.Entity("TaskManagement.Models.User", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.Property<string>("name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasDiscriminator().HasValue("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -600,9 +625,7 @@ namespace TaskManagement.Data.Migrations
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Creator")
                         .WithMany()
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CreatorId");
 
                     b.HasOne("TaskManagement.Models.ProjectTypes", "ProjectType")
                         .WithMany("projects")
@@ -628,7 +651,7 @@ namespace TaskManagement.Data.Migrations
 
             modelBuilder.Entity("TaskManagement.Models.UserProject", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Member")
+                    b.HasOne("TaskManagement.Models.User", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)

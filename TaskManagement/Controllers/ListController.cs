@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Humanizer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TaskManagement.Data;
@@ -18,6 +19,7 @@ namespace TaskManagement.Controllers
         {
             _context = context;
         }
+
 
         [Route("Create/{boardid}")]
         public IActionResult Create(int boardid)

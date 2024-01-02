@@ -20,7 +20,7 @@ namespace TaskManagement.Controllers
         public IActionResult BoardDetails(int boardid)
         {
             var board = _context.Boards.Find(boardid);
-            if(board == null)
+            if (board == null)
             {
                 return RedirectToAction("Index", "Home");
             }
@@ -29,15 +29,10 @@ namespace TaskManagement.Controllers
         }
 
 
-        public JsonResult GetBoardByProjectId(int projectid)
+        [HttpGet("KanbanBoard")]
+        public IActionResult KanbanBoard(int projectid)
         {
-            var boardExists = _context.Boards.FirstOrDefault(b => b.ProjectId == projectid);
-
-            if (boardExists != null)
-            {
-
-            }
-            return Json(new{ success = true });
+            return View();
         }
     }
 }

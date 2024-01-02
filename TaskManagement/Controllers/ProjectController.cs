@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
 using TaskManagement.Data;
 using TaskManagement.Models;
 using TaskManagement.Models.ViewModels;
+using TaskManagement.Services.Interface;
 
 namespace TaskManagement.Controllers
 {
@@ -15,12 +17,14 @@ namespace TaskManagement.Controllers
     public class ProjectController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _usermanager; 
+        private readonly UserManager<IdentityUser> _usermanager;
+        private readonly IListService _lists;
 
-        public ProjectController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public ProjectController(ApplicationDbContext context, UserManager<IdentityUser> userManager, IListService lists)
         {
             _context = context;
             _usermanager = userManager;
+            _lists = lists;
         }
 
 
@@ -40,7 +44,7 @@ namespace TaskManagement.Controllers
 
                 // Get the project IDs where the user is a member
                 var memberProjectsIds = _context.UserProjects
-                    .Where(up => up.UserId == userId)
+                    .Where(up => up.MemberId == userId)
                     .Select(up => up.ProjectId)
                     .ToList();
 
@@ -80,7 +84,7 @@ namespace TaskManagement.Controllers
             //Initializing a viewmodel to give to the view
             Project_TypeViewModel ViewModel = new Project_TypeViewModel()
             {
-                Project = new Project(),
+                Project = new Models.Project(),
                 ProjectTypes = _context.ProjectTypes.ToList()
             };
 
@@ -108,7 +112,7 @@ namespace TaskManagement.Controllers
 
         [HttpPost("Save")]
         [ValidateAntiForgeryToken]
-        public IActionResult Save(Project project)
+        public IActionResult Save(Models.Project project)
         {
 
             //Checking the model validity before action
@@ -126,8 +130,11 @@ namespace TaskManagement.Controllers
             //checking if the project is new or old
             if (project.ProjectId == 0)
             {
+                //Filling the projects required data if it is new
                 project.CreatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 project.DateCreated = DateTime.Now;
+
+                _context.Projects.Add(project);
 
                 var board = new Board
                 {
@@ -142,6 +149,24 @@ namespace TaskManagement.Controllers
                 _context.Backlogs.Add(backlog);
 
                 _context.SaveChanges();
+
+                _lists.CreateDefaultLists(board.BoardId);
+
+                _context.SaveChanges();
+
+                Console.WriteLine(project.CreatorId);
+                Console.WriteLine(project.ProjectId);
+
+                var member = new UserProject
+                {
+                    MemberId = project.CreatorId,
+                    ProjectId = project.ProjectId
+                };
+
+                _context.UserProjects.Add(member);
+
+                _context.SaveChanges();
+
             }
             else
             {
@@ -162,20 +187,20 @@ namespace TaskManagement.Controllers
                 }
             }
 
-            return RedirectToAction(nameof(Index), nameof(HomeController));
+            return RedirectToAction("All");
         }
 
 
         [HttpGet("Board")]
         public IActionResult ProjectBoard(int projectid)
         {
-
+            return NotFound();
         }
 
 
-        [HttpPost("Delete/{id}")]
-        [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        [HttpDelete("DeleteProjectById/{id}")]
+        //[ValidateAntiForgeryToken]
+        public IActionResult DeleteProjectById(int id)
         {
             var project = _context.Projects.Find(id);
 
@@ -188,7 +213,7 @@ namespace TaskManagement.Controllers
             _context.Projects.Remove(project);
             _context.SaveChanges();
 
-            return RedirectToAction(nameof(Index), nameof(HomeController));
+            return NoContent();
         }
     }
 }

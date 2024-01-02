@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagement.Models
@@ -7,13 +8,24 @@ namespace TaskManagement.Models
     {
         [Key]
         public int ProjectId { get; set; }
+
         [StringLength(50)]
         public string Name { get; set; }
+
         public string Description { get; set; }
-        public DateTime? DateCreated { get; set; }
-        public string? CreatorId {  get; set; }
-        public IdentityUser? Creator { get; set; }
+
+        [ValidateNever]
+        public DateTime DateCreated { get; set; }
+
+        [ValidateNever]
+        public string CreatorId {  get; set; }
+
+        [ValidateNever]
+        public IdentityUser Creator { get; set; }
+
         public int ProjectTypeId { get; set; }
-        public ProjectTypes? ProjectType { get; set; }
+
+        [ValidateNever]
+        public ProjectTypes ProjectType { get; set; }
     }
 }

@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ServiceStack;
 using TaskManagement.Data;
+using TaskManagement.Services.Interface;
+using TaskManagement.Services.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +16,11 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
+
+
+//My Custom Services
+builder.Services.AddScoped<IListService, ListService>();
+
 
 var app = builder.Build();
 

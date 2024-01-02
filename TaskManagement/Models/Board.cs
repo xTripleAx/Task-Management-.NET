@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagement.Models
 {
@@ -8,6 +9,9 @@ namespace TaskManagement.Models
         [Key]
         public int BoardId { get; set; }
         public int ProjectId { get; set; }
+
+        [ValidateNever]
         public Project Project { get; set; }
+        public ICollection<List> Lists { get; set; }
     }
 }

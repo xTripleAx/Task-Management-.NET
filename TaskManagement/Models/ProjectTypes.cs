@@ -8,5 +8,6 @@ namespace TaskManagement.Models
         [Key]
         public int ProjectTypeId { get; set; }
         public string ProjecTypetName { get; set; }
+        public ICollection<Project> projects { get; set; }
     }
 }

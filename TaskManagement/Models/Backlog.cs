@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagement.Models
 {
@@ -7,7 +8,9 @@ namespace TaskManagement.Models
         [Key]
         public int BacklogId { get; set; }
         public int ProjectId { get; set; }
-        public Project Project { get; set; }
 
+        [ValidateNever]
+        public Project Project { get; set; }
+        public ICollection<Sprint> Sprints { get; set; }
     }
 }

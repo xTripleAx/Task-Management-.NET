@@ -50,7 +50,6 @@
     <script>
         $(document).ready(function () {
             var table = $('#Projects').DataTable({
-                responsive: true,
                 ajax: {
                     url: '/Project/GetProjectsByUserId',
                     type: 'GET',
@@ -61,7 +60,13 @@
                     {
                         data: 'projectName',
                         render: function (data, type, project) {
-                            return '<a href="/project/board" data-projectid="' + project.ProjectId + '" class="text-decoration-none">' + data + ' </a>';
+                            var link;
+                            if (project.projectType.projecTypetName.toLowerCase() === 'kanban') {
+                                link = '<a href="/Board/KanbanBoard" data-projectid="' + project.ProjectId + '" class="text-decoration-none">' + data + ' </a>';
+                            } else {
+                                link = '<a href="/Board/ScrumBoard" data-projectid="' + project.ProjectId + '" class="text-decoration-none">' + data + ' </a>';
+                            }
+                            return link;
                         }
                     },
                     {
@@ -92,25 +97,39 @@
 
             $("#Projects").on('click', ".js-delete", function () {
                 var button = $(this);
-                $('#deleteConfirmationModal').modal('show');
 
-                $('#confirmDeleteBtn').on('click', function () {
-                    $('#deleteConfirmationModal').modal('hide');
-
-                    $.ajax({
-                        url: '/Project/DeleteProjectById/' + button.data('projectid'),
-                        method: 'DELETE',
-                        success: function () {
-                            alert('Delete Succeeded');
-                            table.row(button.parents('tr')).remove().draw();
-                        }
-                    });
+                bootbox.confirm('Are you sure you want to delete this Project?', function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: '/Project/DeleteProjectById/' + button.data('projectid'),
+                            method: 'DELETE',
+                            success: function () {
+                                alert('Delete Succeeded');
+                                table.row(button.parents('tr')).remove().draw()
+                            }
+                        });
+                    }
                 });
+
+                // $('#deleteConfirmationModal').modal('show');
+
+                // $('#confirmDeleteBtn').on('click', function () {
+                //     $('#deleteConfirmationModal').modal('hide');
+
+                //     $.ajax({
+                //         url: '/Project/DeleteProjectById/' + button.data('projectid'),
+                //         method: 'Post',
+                //         success: function () {
+                //             alert('Delete Succeeded');
+                //             // table.row(button.parents('tr')).remove().draw();
+                //         }
+                //     });
+                // });
             });
 
-            $('#deleteConfirmationModal').on('click', '#CancelOperation', function () {
-                $('#deleteConfirmationModal').modal('hide');
-            });
+            // $('#deleteConfirmationModal').on('click', '#CancelOperation', function () {
+            //     $('#deleteConfirmationModal').modal('hide');
+            // });
 
         });
     </script>
