@@ -239,7 +239,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Backlogs");
+                    b.ToTable("Backlogs", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.Board", b =>
@@ -257,7 +257,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Boards");
+                    b.ToTable("Boards", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.Comment", b =>
@@ -288,7 +288,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("IssueId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.Issue", b =>
@@ -338,7 +338,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("ReporterId");
 
-                    b.ToTable("Issues");
+                    b.ToTable("Issues", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.List", b =>
@@ -366,7 +366,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("BoardId");
 
-                    b.ToTable("Lists");
+                    b.ToTable("Lists", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.Project", b =>
@@ -402,7 +402,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("ProjectTypeId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.ProjectTypes", b =>
@@ -419,7 +419,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasKey("ProjectTypeId");
 
-                    b.ToTable("ProjectTypes");
+                    b.ToTable("ProjectTypes", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.Sprint", b =>
@@ -450,7 +450,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("BacklogId");
 
-                    b.ToTable("Sprints");
+                    b.ToTable("Sprints", (string)null);
                 });
 
             modelBuilder.Entity("TaskManagement.Models.UserProject", b =>
@@ -465,7 +465,7 @@ namespace TaskManagement.Data.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("UserProjects");
+                    b.ToTable("UserProjects", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

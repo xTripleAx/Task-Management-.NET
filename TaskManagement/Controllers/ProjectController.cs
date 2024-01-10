@@ -154,9 +154,6 @@ namespace TaskManagement.Controllers
 
                 _context.SaveChanges();
 
-                Console.WriteLine(project.CreatorId);
-                Console.WriteLine(project.ProjectId);
-
                 var member = new UserProject
                 {
                     MemberId = project.CreatorId,
@@ -188,13 +185,6 @@ namespace TaskManagement.Controllers
             }
 
             return RedirectToAction("All");
-        }
-
-
-        [HttpGet("Board")]
-        public IActionResult ProjectBoard(int projectid)
-        {
-            return NotFound();
         }
 
 

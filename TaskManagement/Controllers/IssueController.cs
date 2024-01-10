@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TaskManagement.Data;
 using TaskManagement.Models;
 
 namespace TaskManagement.Controllers
 {
+    [Route("Issue")]
     public class IssueController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -13,21 +15,44 @@ namespace TaskManagement.Controllers
             _context = context;
         }
 
-        public IActionResult Create(int listid)
+        [HttpPost("Create")]
+        [ValidateAntiForgeryToken]
+        public JsonResult Create([Bind("IssueName,IssueDescription,AssigneeId,ListId")] Issue newIssue, int projectid)
         {
-            var list = _context.Lists.Find(listid);
-            if (list == null)
+            try
             {
-                return NotFound();
-            }
-            else
-            {
-                var issue = new Issue()
+                if (projectid == 0)
                 {
-                    ListId = listid,
-                };
-                return View("IssueForm", list);
+                    return Json(new { success = false, message = "Project Not Found" });
+                }
+
+                if (newIssue == null)
+                {
+                    return Json(new { success = false, message = "Issue Not Found" });
+                }
+
+                newIssue.ReporterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                newIssue.DateCreated = DateTime.Now;
+
+                Console.WriteLine(newIssue.ReporterId);
+
+                if (ModelState.IsValid)
+                {
+                    _context.Issues.Add(newIssue);
+                    _context.SaveChanges();
+
+                    return Json(new { success = true, message = "Issue Created Successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                }
+
+                //If ModelState is not valid, return an error message
+                return Json(new { success = false, message = "Invalid data. Please check your input." });
             }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An Error occured while creating the issue." });
+            }
+
+
         }
 
 
@@ -42,50 +67,5 @@ namespace TaskManagement.Controllers
             return View("IssueForm", issue);
         }
 
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Save(Issue issue)
-        {
-
-            //Checking the model validity before action
-            if (!ModelState.IsValid)
-            {
-                //if not valid redirect to the form with posted data
-                return View("IssueForm", issue);
-            }
-
-            //checking if the issue is new or old
-            if (issue.IssueId == 0)
-            {
-                //if new add issue
-                _context.Issues.Add(issue);
-                _context.SaveChanges();
-
-            }
-            else
-            {
-                //fetch the issue from the database
-                var issueExists = _context.Issues.Find(issue.IssueId);
-
-                //if found edit the data
-                if (issueExists != null)
-                {
-                    issueExists.IssueName = issue.IssueName;
-                    issueExists.AssigneeId = issue.AssigneeId;
-                    issueExists.ReporterId = issue.ReporterId;
-                    issueExists.blockedBy = issue.blockedBy;
-                    issueExists.blocks = issue.blocks;
-
-                    _context.SaveChanges();
-                }
-                else //report error
-                {
-                    return NotFound();
-                }
-            }
-
-            return RedirectToAction(nameof(Index), nameof(HomeController));
-        }
     }
 }

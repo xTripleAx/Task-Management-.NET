@@ -14,6 +14,6 @@ namespace TaskManagement.Models
         public int BoardId { get; set; }
         [ValidateNever]
         public Board Board { get; set; }
-        public ICollection<Issue> Issues { get; set; }
+        public ICollection<Issue>? Issues { get; set; }
     }
 }

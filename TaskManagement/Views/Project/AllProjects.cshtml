@@ -62,9 +62,9 @@
                         render: function (data, type, project) {
                             var link;
                             if (project.projectType.projecTypetName.toLowerCase() === 'kanban') {
-                                link = '<a href="/Board/KanbanBoard" data-projectid="' + project.ProjectId + '" class="text-decoration-none">' + data + ' </a>';
+                                link = '<a href="/Board/KanbanBoard?projectid=' + project.projectId + '" class="text-decoration-none">' + data + ' </a>';
                             } else {
-                                link = '<a href="/Board/ScrumBoard" data-projectid="' + project.ProjectId + '" class="text-decoration-none">' + data + ' </a>';
+                                link = '<a href="/Board/ScrumBoard?projectid=' + project.projectId + '" class="text-decoration-none">' + data + ' </a>';
                             }
                             return link;
                         }
@@ -132,5 +132,15 @@
             // });
 
         });
+
+        function redirectToKanban(projectId) {
+            sessionStorage.setItem('projectid', projectId);
+            window.location.href = '/Board/KanbanBoard';
+        }
+
+        function redirectToScrum(projectId) {
+            sessionStorage.setItem('projectid', projectId);
+            window.location.href = '/Board/ScrumBoard';
+        }
     </script>
 }

@@ -1,3 +1,18 @@
-﻿.board{
-    overflow:scroll;
+﻿.LaneHeading {
+    position: relative;
+}
+
+.threedots {
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+}
+
+body {
+    user-select: none;
+}
+
+.anissue {
+    position: relative;
+    display:flex;
 }

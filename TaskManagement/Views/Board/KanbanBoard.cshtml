@@ -1,54 +1,213 @@
-﻿@model 
+﻿@model TaskManagement.Models.ViewModels.AllInfoModel
 @{
     Layout = "_LoggedInLayout";
 }
 
-<h1 class="m-2">Projects Name</h1>
+<h1 class="m-2">@Model.Project.Name</h1>
 
 <div class="board">
 
-    <div class="row m-2">
-        <div class="col-sm-3 me-3 p-2 bg-dark text-light rounded-3">
-            <h3 class="LaneHeading">To Do</h3>
+    <div class="row m-2 Lists" style="flex-wrap:nowrap; overflow-x:scroll;">
+        @foreach (var listWithIssues in Model.ListsWithIssues)
+        {
+            <div class="col-sm-3 me-3 p-2 bg-dark text-light rounded-3 listbody">
+                <div style="display: flex; position:relative">
+                    <h3 class="LaneHeading">@listWithIssues.List.Name</h3>
+                    <span class="threedots">
+                        <i class="fa-solid fa-pen" onclick="openEditListModal('@listWithIssues.List.Name', @listWithIssues.List.ListId, @listWithIssues.List.ColumnLimit, @(listWithIssues.List.isListForFinish ? "true" : "false"))"></i>
+                        <i class="fa-solid fa-trash" onclick="confirmDelete('@listWithIssues.List.Name', @listWithIssues.List.ListId)"></i>
+                    </span>
+                </div>
 
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">1</a>
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">2</a>
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">3</a>
-        </div>
-
-        <div class="col-sm-3 me-3 p-2 bg-dark text-light rounded-3">
-            <h3 class="LaneHeading">Doing</h3>
-
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block text-decoration-none" draggable="true">Writing the first page</a>
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">2</a>
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">3</a>
-        </div>
-
-        <div class="col-sm-3 me-3 p-2 bg-dark text-light rounded-3">
-            <h3 class="LaneHeading">Done</h3>
-
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">1</a>
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">2</a>
-            <a class="Task bg-light text-dark rounded p-1 my-2 d-block" draggable="true">3</a>
-        </div>
-
+                @if (listWithIssues.Issues != null && listWithIssues.Issues.Any())
+                {
+                    foreach (var issue in listWithIssues.Issues)
+                    {
+                        <div class="Task bg-light text-dark rounded p-1 my-2 d-block text-decoration-none anissue" draggable="true">
+                            <a onclick="openIssueDetailsModal(@issue.IssueId, '@issue.IssueName', '@issue.IssueDescription', '@issue.Assignee.UserName', '@issue.List.Name', '@issue.DateCreated')">@issue.IssueName</a>
+                            <span class="threedots me-lg-1">
+                                <i class="fa-solid fa-pen" onclick=""></i>
+                                <i class="fa-solid fa-trash" onclick=""></i>
+                            </span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <span>All Done!</span>
+                }
+            </div>
+        }
     </div>
-
-    <div class="dropdown m-2">
-        <button class="btn btn-sm btn-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            Create
-        </button>
-        <div class="dropdown-menu scrollable-dropdown-actions-button" aria-labelledby="dropdownMenuButton">
-            <a class="dropdown-item" href="#">
-                Create Issue
-            </a>
-            <a class="dropdown-item" href="#">
-                Create List
-            </a>
-        </div>
-    </div>
-
 
 </div>
 
+
+<div class="dropdown m-2">
+    <button class="btn btn-sm btn-dark dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Create
+    </button>
+    <div class="dropdown-menu scrollable-dropdown-actions-button" aria-labelledby="dropdownMenuButton">
+        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createIssueModal" style="cursor:pointer;">
+            Create Issue
+        </a>
+        <a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#createListModal" style="cursor:pointer;">
+            Create List
+        </a>
+    </div>
+</div>
+
+<!-- Create List Modal -->
+<div class="modal fade" id="createListModal" tabindex="-1" aria-labelledby="createListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="createListModalLabel">Create List</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Create List Form -->
+                <form id="createListForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="listName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="listName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="columnLimit" class="form-label">Column Limit</label>
+                        <input type="number" class="form-control" id="columnLimit" min="1" max="20" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isListForFinish">
+                        <label class="form-check-label" for="isListForFinish">Is List for Finish</label>
+                    </div>
+                    <input type="hidden" id="boardId" value="@Model.Board.BoardId">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createList()">Create List</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit List Modal -->
+<div class="modal fade" id="editListModal" tabindex="-1" aria-labelledby="editListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="editListModalLabel">Edit List</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Edit List Form -->
+                <form id="editListForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="editListName" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="editListName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editColumnLimit" class="form-label">Column Limit</label>
+                        <input type="number" class="form-control" id="editColumnLimit" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="editIsListForFinish">
+                        <label class="form-check-label" for="editIsListForFinish">Is List for Finish</label>
+                    </div>
+                    <input type="hidden" id="editListId" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editList()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Create Issue Modal -->
+<div class="modal fade" id="createIssueModal" tabindex="-1" aria-labelledby="createIssueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="createIssueModalLabel">Create Issue</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Create Issue Form -->
+                <form id="createIssueForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="IssueName" class="form-label">Issue Name</label>
+                        <input type="text" class="form-control" id="IssueName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="IssueDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="IssueDescription" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="IssueAssignee">Assignee</label>
+                        <select type="text" class="form-control" id="IssueAssignee" asp-items="Model.ProjectMemebers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="IssueList">List</label>
+                        <select type="text" class="form-control" id="IssueList" asp-items="Model.ListsWithIssues.Select(m => new SelectListItem { Value = m.List.ListId.ToString(), Text = m.List.Name })"></select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createIssue()">Create Issue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Display Issue Details Modal -->
+<div class="modal fade" id="displayIssueDetailsModal" tabindex="-1" aria-labelledby="displayIssueDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="displayIssueDetailsModalLabel">Issue Details</h5>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Issue Name:</label>
+                    <p id="DetailsIssueName"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Description:</label>
+                    <p id="DetailsIssueDescription"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Assignee:</label>
+                    <p id="DetailsIssueAssignee"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">List:</label>
+                    <p id="DetailsIssueList"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date Created:</label>
+                    <p id="DetailsIssueDate"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    var projectid = @Model.Project.ProjectId;
+</script>
+<script src="~/js/KanbanBoard.js"></script>
 <script src="~/lib/popper.js/umd/popper.min.js"></script>
