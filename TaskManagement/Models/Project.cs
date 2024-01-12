@@ -23,6 +23,7 @@ namespace TaskManagement.Models
         [ValidateNever]
         public IdentityUser Creator { get; set; }
 
+        [Display(Name = "Project Type")]
         public int ProjectTypeId { get; set; }
 
         [ValidateNever]

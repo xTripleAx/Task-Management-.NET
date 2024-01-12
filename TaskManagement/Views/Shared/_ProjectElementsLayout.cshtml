@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@model TaskManagement.Models.ViewModels.AllInfoModel
+<!DOCTYPE html>
 <html lang="en">
 <head>
 
@@ -6,8 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TaskManagement</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TaskManagement.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/lib/datatables/css/datatables.bootstrap4.css" />
     <link rel="stylesheet" href="~/lib/fontawesome/all.min.css" />
     <link rel="stylesheet" href="~/lib/sweetalert2/sweetalert2.min.css" />
@@ -20,23 +19,29 @@
 </head>
 <body id="body-pd">
 
+
     <header>
         <partial name="_NavbarPartial" />
     </header>
 
+
     <div class="container-fluid">
-        <div class="row flex-row">
-            <div class="bg-light col-md-2" id="sidebar" style="height: auto;">
-                <partial name="_ProjectSideBarPartial" />
+        
+        <div class="row">
+            <div class="col-md-2 border-end" id="sidebar" style="height: 100vh;">
+                @await Html.PartialAsync("_ProjectSideBarPartial", Model.Project)
             </div>
 
             <div class="col-md-10" id="content">
+                <button id="toggleSidebarBtn" class="btn btn-dark mt-1"><i class="fa-solid fa-bars"></i></button>
                 <main role="main" class="pb-3">
                     @RenderBody()
                 </main>
             </div>
         </div>
+
     </div>
+
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

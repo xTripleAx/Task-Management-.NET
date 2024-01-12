@@ -11,6 +11,7 @@ namespace TaskManagement.Controllers
     [Route("Board")]
     public class BoardController : Controller
     {
+
         private readonly ApplicationDbContext _context;
 
         public BoardController(ApplicationDbContext context)
@@ -18,16 +19,17 @@ namespace TaskManagement.Controllers
             _context = context;
         }
 
-        [HttpGet("KanbanBoard")]
+
+        [HttpGet("KanbanBoard/{projectid}")]
         public IActionResult KanbanBoard(int projectid)
         {
 
-            if (projectid == 0)
-            {
-                return Content("Error No Project");
-            }
+            Project project = _context.Projects.Include(p => p.ProjectType).FirstOrDefault(p => p.ProjectId == projectid);
 
-            Project project = new Project();
+            if (project == null)
+            {
+                return View("Error404");
+            }
 
             var board = _context.Boards
                 .Include(b => b.Project)

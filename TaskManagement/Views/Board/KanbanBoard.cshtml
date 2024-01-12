@@ -1,7 +1,26 @@
 ﻿@model TaskManagement.Models.ViewModels.AllInfoModel
 @{
-    Layout = "_LoggedInLayout";
+    Layout = "_ProjectElementsLayout";
 }
+
+<style>
+    .row.Lists::-webkit-scrollbar {
+        height: 10px;
+    }
+
+    .row.Lists::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 8px;
+    }
+
+    .row.Lists::-webkit-scrollbar-track {
+        display: none;
+    }
+
+    .row.Lists{
+        padding-bottom:10px;
+    }
+</style>
 
 <h1 class="m-2">@Model.Project.Name</h1>
 
@@ -15,7 +34,7 @@
                     <h3 class="LaneHeading">@listWithIssues.List.Name</h3>
                     <span class="threedots">
                         <i class="fa-solid fa-pen" onclick="openEditListModal('@listWithIssues.List.Name', @listWithIssues.List.ListId, @listWithIssues.List.ColumnLimit, @(listWithIssues.List.isListForFinish ? "true" : "false"))"></i>
-                        <i class="fa-solid fa-trash" onclick="confirmDelete('@listWithIssues.List.Name', @listWithIssues.List.ListId)"></i>
+                        <i class="fa-solid fa-trash" onclick="confirmListDelete(@listWithIssues.List.ListId)"></i>
                     </span>
                 </div>
 
@@ -24,10 +43,10 @@
                     foreach (var issue in listWithIssues.Issues)
                     {
                         <div class="Task bg-light text-dark rounded p-1 my-2 d-block text-decoration-none anissue" draggable="true">
-                            <a onclick="openIssueDetailsModal(@issue.IssueId, '@issue.IssueName', '@issue.IssueDescription', '@issue.Assignee.UserName', '@issue.List.Name', '@issue.DateCreated')">@issue.IssueName</a>
+                            <a onclick="openIssueDetailsModal('@issue.IssueName', '@issue.IssueDescription', '@issue.Assignee.UserName', '@issue.List.Name', '@issue.DateCreated')" style="cursor:pointer;">@issue.IssueName</a>
                             <span class="threedots me-lg-1">
-                                <i class="fa-solid fa-pen" onclick=""></i>
-                                <i class="fa-solid fa-trash" onclick=""></i>
+                                <i class="fa-solid fa-pen" onclick="openIssueEditModal('@issue.IssueId','@issue.IssueName','@issue.IssueDescription','@issue.AssigneeId','@issue.ListId')"></i>
+                                <i class="fa-solid fa-trash" onclick="confirmIssueDelete(@issue.IssueId)"></i>
                             </span>
                         </div>
                     }
@@ -168,33 +187,74 @@
 </div>
 
 
-<!-- Display Issue Details Modal -->
-<div class="modal fade" id="displayIssueDetailsModal" tabindex="-1" aria-labelledby="displayIssueDetailsModalLabel" aria-hidden="true">
+<!-- Edit Issue Modal -->
+<div class="modal fade" id="EditIssueModal" tabindex="-1" aria-labelledby="EditIssueModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="EditIssueModalLabel">Edit Issue</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Edit Issue Form -->
+                <form id="EditIssueForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="EditIssueName" class="form-label">Issue Name</label>
+                        <input type="text" class="form-control" id="EditIssueName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="EditIssueDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="EditIssueDescription" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="EditIssueAssignee">Assignee</label>
+                        <select type="text" class="form-control" id="EditIssueAssignee" asp-items="Model.ProjectMemebers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="EditIssueList">List</label>
+                        <select type="text" class="form-control" id="EditIssueList" asp-items="Model.ListsWithIssues.Select(m => new SelectListItem { Value = m.List.ListId.ToString(), Text = m.List.Name })"></select>
+                    </div>
+                    <input type="hidden" id="editIssueId" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editIssue()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Display Issue Details Modal -->
+<div class="modal fade" id="displayIssueDetailsModal" tabindex="-1" aria-labelledby="displayIssueDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
                 <h5 class="modal-title" id="displayIssueDetailsModalLabel">Issue Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Issue Name:</label>
-                    <p id="DetailsIssueName"></p>
+                    <label class="form-label fw-bold">Issue Name:</label>
+                    <p id="DetailsIssueName" class="text-muted"></p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Description:</label>
-                    <p id="DetailsIssueDescription"></p>
+                    <label class="form-label fw-bold">Description:</label>
+                    <p id="DetailsIssueDescription" class="text-muted"></p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Assignee:</label>
-                    <p id="DetailsIssueAssignee"></p>
+                    <label class="form-label fw-bold">Assignee:</label>
+                    <p id="DetailsIssueAssignee" class="text-muted"></p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">List:</label>
-                    <p id="DetailsIssueList"></p>
+                    <label class="form-label fw-bold">List:</label>
+                    <p id="DetailsIssueList" class="text-muted"></p>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Date Created:</label>
-                    <p id="DetailsIssueDate"></p>
+                    <label class="form-label fw-bold">Date Created:</label>
+                    <p id="DetailsIssueDate" class="text-muted"></p>
                 </div>
             </div>
             <div class="modal-footer">
@@ -209,5 +269,5 @@
 <script>
     var projectid = @Model.Project.ProjectId;
 </script>
-<script src="~/js/KanbanBoard.js"></script>
+<script src="~/MyFiles/js/KanbanBoard.js"></script>
 <script src="~/lib/popper.js/umd/popper.min.js"></script>

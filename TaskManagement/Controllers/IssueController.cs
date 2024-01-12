@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.IO.IsolatedStorage;
 using System.Security.Claims;
 using TaskManagement.Data;
 using TaskManagement.Models;
@@ -21,17 +22,23 @@ namespace TaskManagement.Controllers
         {
             try
             {
-                if (projectid == 0)
+
+                Project project = _context.Projects.Find(projectid);
+
+                if (project == null)
                 {
                     return Json(new { success = false, message = "Project Not Found" });
                 }
+
+                var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
 
                 if (newIssue == null)
                 {
                     return Json(new { success = false, message = "Issue Not Found" });
                 }
 
-                newIssue.ReporterId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                newIssue.ReporterId = userid;
                 newIssue.DateCreated = DateTime.Now;
 
                 Console.WriteLine(newIssue.ReporterId);
@@ -56,15 +63,60 @@ namespace TaskManagement.Controllers
         }
 
 
-        public IActionResult Edit(int issueid, int listid)
+        [HttpPost("Edit")]
+        public JsonResult Edit([Bind("IssueId,IssueName,IssueDescription,AssigneeId,ListId")] Issue newIssue, int projectid)
         {
-            var issue = _context.Issues.FirstOrDefault(l => l.IssueId == issueid && l.ListId == listid);
-            if (issue == null)
+            try
             {
-                return NotFound();
-            }
+                var issue = _context.Issues.FirstOrDefault(l => l.IssueId == newIssue.IssueId);
+                if (issue == null)
+                {
+                    return Json(new { success = false, message = "Issue Not Found" });
+                }
+                else
+                {
+                    issue.IssueName = newIssue.IssueName;
+                    issue.IssueDescription = newIssue.IssueDescription;
+                    issue.AssigneeId = newIssue.AssigneeId;
+                    issue.ListId = newIssue.ListId;
 
-            return View("IssueForm", issue);
+                    _context.SaveChanges();
+
+                    return Json(new { success = true, message = "Issue updated successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                }
+            }
+            catch(Exception ex)
+            {
+                return Json(new { success = false, message = "An Error occured while editing the issue." });
+            }
+        }
+
+
+        [HttpPost("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int IssueId, int projectid)
+        {
+            try
+            {
+                var Issue = _context.Issues.Find(IssueId);
+
+                if (Issue != null)
+                {
+                    // Delete the List
+                    _context.Issues.Remove(Issue);
+
+                    // Save changes to the database
+                    _context.SaveChanges();
+
+                    return Json(new { success = true, message = "Issue deleted successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                }
+
+                return Json(new { success = false, message = "Issue not found" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred while deleting the issue" });
+            }
         }
 
     }

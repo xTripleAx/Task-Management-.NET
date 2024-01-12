@@ -1,20 +1,19 @@
-﻿//$(document).ready(function () {
-//    $(".collapse-btn").click(function () {
-//        $("#sidebar").toggleClass("collapsed");
-//    });
-//});
+﻿document.addEventListener("DOMContentLoaded", function () {
+    var sidebar = document.getElementById("sidebar");
+    var content = document.getElementById("content");
+    var toggleSidebarBtn = document.getElementById("toggleSidebarBtn");
 
-//$(document).ready(function () {
-//    $(".collapse-btn").click(function () {
-//        $("#sidebar").toggleClass("show");
-//        $(".flex-nowrap > div").toggleClass("col-md-2 col-lg-2 col-xl-2");
-//    });
-//});
-
-//$(document).ready(function () {
-//    $(".collapse-btn").click(function () {
-//        $("#sidebar").toggleClass("col-md-2 col-md-1");
-//        $("#content").toggleClass("col-md-10 col-md-11");
-//        $("#remove-word").toggleClass("d-sm-inline");
-//    });
-//});
+    toggleSidebarBtn.addEventListener("click", function () {
+        if (sidebar.style.display !== "none") {
+            sidebar.style.display = "none";
+            content.classList.remove("col-md-10");
+            content.classList.add("col-md-12");
+            toggleSidebarBtn.style.right = "0";
+        } else {
+            sidebar.style.display = "block";
+            content.classList.remove("col-md-12");
+            content.classList.add("col-md-10");
+            toggleSidebarBtn.style.right = "-40px";
+        }
+    });
+});
