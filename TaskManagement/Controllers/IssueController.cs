@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.IO.IsolatedStorage;
 using System.Security.Claims;
 using TaskManagement.Data;
@@ -6,6 +7,7 @@ using TaskManagement.Models;
 
 namespace TaskManagement.Controllers
 {
+    [Authorize]
     [Route("Issue")]
     public class IssueController : Controller
     {

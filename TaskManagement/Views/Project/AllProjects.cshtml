@@ -97,40 +97,39 @@
 
             $("#Projects").on('click', ".js-delete", function () {
                 var button = $(this);
-
+                var token = $('input[name="__RequestVerificationToken"]').val();
                 bootbox.confirm('Are you sure you want to delete this Project?', function (result) {
                     if (result) {
                         $.ajax({
                             url: '/Project/DeleteProjectById/' + button.data('projectid'),
                             method: 'DELETE',
-                            success: function () {
-                                alert('Delete Succeeded');
-                                table.row(button.parents('tr')).remove().draw()
+                            headers: {
+                                'RequestVerificationToken': token
+                            },
+                            success: function (result) {
+                                if (result.success) {
+                                    // Handle success (e.g., refresh the page or update the lists dynamically)
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: result.message,
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                    table.row(button.parents('tr')).remove().draw()
+                                }
+                                else {
+                                    // Handle failure
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Oops...',
+                                        text: result.message,
+                                    });
+                                }
                             }
                         });
                     }
                 });
-
-                // $('#deleteConfirmationModal').modal('show');
-
-                // $('#confirmDeleteBtn').on('click', function () {
-                //     $('#deleteConfirmationModal').modal('hide');
-
-                //     $.ajax({
-                //         url: '/Project/DeleteProjectById/' + button.data('projectid'),
-                //         method: 'Post',
-                //         success: function () {
-                //             alert('Delete Succeeded');
-                //             // table.row(button.parents('tr')).remove().draw();
-                //         }
-                //     });
-                // });
             });
-
-            // $('#deleteConfirmationModal').on('click', '#CancelOperation', function () {
-            //     $('#deleteConfirmationModal').modal('hide');
-            // });
-
         });
 
         function redirectToKanban(projectId) {

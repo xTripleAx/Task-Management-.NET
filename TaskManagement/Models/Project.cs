@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,6 +8,7 @@ namespace TaskManagement.Models
     public class Project
     {
         [Key]
+        [HiddenInput]
         public int ProjectId { get; set; }
 
         [StringLength(50)]

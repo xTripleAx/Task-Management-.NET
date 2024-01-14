@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json.Serialization;
@@ -12,7 +11,7 @@ using TaskManagement.Services.Interface;
 
 namespace TaskManagement.Controllers
 {
-
+    [Authorize]
     [Route("Project")]
     public class ProjectController : Controller
     {
@@ -92,118 +91,279 @@ namespace TaskManagement.Controllers
         }
 
 
-        [HttpGet("Edit/{id}")]
-        public IActionResult Edit(int id)
+        [HttpPost("Save")]
+        [ValidateAntiForgeryToken]
+        public IActionResult Save(Project project)
         {
-            //Checking if project exists in database
-            var project = _context.Projects.Find(id);
-
-            if (project == null) { return NotFound(); }
-
-            //Initializing a viewmodel with the project entity in it
-            Project_TypeViewModel ViewModel = new Project_TypeViewModel()
+            try
             {
-                Project = project,
-                ProjectTypes = _context.ProjectTypes.ToList(),
-            };
-            return View("ProjectForm", ViewModel);
+                //Checking the model validity before action
+                if (!ModelState.IsValid)
+                {
+                    //if not valid redirect to the form with posted data
+                    Project_TypeViewModel ViewModel = new Project_TypeViewModel()
+                    {
+                        Project = project,
+                        ProjectTypes = _context.ProjectTypes.ToList(),
+                    };
+                    return View("ProjectForm", ViewModel);
+                }
+
+                //checking if the project is new or old
+                if (project.ProjectId == 0)
+                {
+                    //Filling the projects required data if it is new
+                    project.CreatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    project.DateCreated = DateTime.Now;
+
+                    _context.Projects.Add(project);
+
+                    var board = new Board
+                    {
+                        Project = project
+                    };
+                    _context.Boards.Add(board);
+
+                    var backlog = new Backlog
+                    {
+                        Project = project
+                    };
+                    _context.Backlogs.Add(backlog);
+
+                    _context.SaveChanges();
+
+                    _lists.CreateDefaultLists(board.BoardId);
+
+                    _context.SaveChanges();
+
+                    var member = new UserProject
+                    {
+                        MemberId = project.CreatorId,
+                        ProjectId = project.ProjectId
+                    };
+
+                    _context.UserProjects.Add(member);
+
+                    _context.SaveChanges();
+
+                    return RedirectToAction("All");
+                }
+                else
+                {
+                    //fetch the project from the database
+                    var projectExist = _context.Projects.Include(p => p.ProjectType).FirstOrDefault(p => p.ProjectId == project.ProjectId);
+
+                    //if found edit the data
+                    if (projectExist != null)
+                    {
+                        BaseViewModel m = new BaseViewModel();
+                        m.Project = projectExist;
+                        if (projectExist.CreatorId == _usermanager.GetUserId(User))
+                        {
+                            projectExist.Name = project.Name;
+                            projectExist.Description = project.Description;
+
+                            _context.SaveChanges();
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("", "You are not Creator of this Project!");
+                            return View("ProjectSettings", m);
+                        }
+                        return View("ProjectSettings", m);
+                    }
+                    else
+                    {
+                        return View("Error404");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return View("Error404");
+            }
+
         }
 
 
-        [HttpPost("Save")]
-        [ValidateAntiForgeryToken]
-        public IActionResult Save(Models.Project project)
+
+        [HttpGet("ProjectSettings/{projectid}")]
+        public IActionResult ProjectSettings(int projectid)
         {
-
-            //Checking the model validity before action
-            if (!ModelState.IsValid)
+            BaseViewModel m = new BaseViewModel();
+            Project p = _context.Projects.Include(p => p.ProjectType).FirstOrDefault(p => p.ProjectId == projectid);
+            if (p == null)
             {
-                //if not valid redirect to the form with posted data
-                Project_TypeViewModel ViewModel = new Project_TypeViewModel()
-                {
-                    Project = project,
-                    ProjectTypes = _context.ProjectTypes.ToList(),
-                };
-                return View("ProjectForm", ViewModel);
-            }
-
-            //checking if the project is new or old
-            if (project.ProjectId == 0)
-            {
-                //Filling the projects required data if it is new
-                project.CreatorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                project.DateCreated = DateTime.Now;
-
-                _context.Projects.Add(project);
-
-                var board = new Board
-                {
-                    Project = project
-                };
-                _context.Boards.Add(board);
-
-                var backlog = new Backlog
-                {
-                    Project = project
-                };
-                _context.Backlogs.Add(backlog);
-
-                _context.SaveChanges();
-
-                _lists.CreateDefaultLists(board.BoardId);
-
-                _context.SaveChanges();
-
-                var member = new UserProject
-                {
-                    MemberId = project.CreatorId,
-                    ProjectId = project.ProjectId
-                };
-
-                _context.UserProjects.Add(member);
-
-                _context.SaveChanges();
-
+                return View("Error404");
             }
             else
             {
-                //fetch the project from the database
-                var projectExist = _context.Projects.Find(project.ProjectId);
-
-                //if found edit the data
-                if (projectExist != null)
-                {
-                    projectExist.Name = project.Name;
-                    projectExist.Description = project.Description;
-
-                    _context.SaveChanges();
-                }
-                else //report error
-                {
-                    return NotFound();
-                }
+                m.Project = p;
             }
 
-            return RedirectToAction("All");
+            var userIds = _context.UserProjects
+            .Where(x => x.ProjectId == p.ProjectId)
+            .Select(x => x.MemberId)
+            .ToList();
+
+            var projectMembers = _context.Users
+                .Where(user => userIds.Contains(user.Id))
+                .ToList();
+
+
+            if (!projectMembers.Any(user => user.Id == _usermanager.GetUserId(User)))
+            {
+                return View("Error404");
+            }
+
+            return View("ProjectSettings", m);
         }
 
 
+
+        [HttpGet("ProjectMembers/{projectid}")]
+        public IActionResult ProjectMembers(int projectid)
+        {
+            ProjectUsersViewModel m = new ProjectUsersViewModel();
+            Project p = _context.Projects.Include(p => p.ProjectType).FirstOrDefault(p => p.ProjectId == projectid);
+            if (p == null)
+            {
+                return View("Error404");
+            }
+
+            var memberIds = _context.UserProjects
+                .Where(up => up.ProjectId == projectid)
+                .Select(up => up.MemberId)
+                .ToList();
+
+            var members = _usermanager.Users
+                .Where(u => memberIds.Contains(u.Id))
+                .ToList();
+
+            if (!members.Any(user => user.Id == _usermanager.GetUserId(User)))
+            {
+                return View("Error404");
+            }
+
+            m.Project = p;
+            m.ProjectMembers = members;
+
+            return View(m);
+
+        }
+
+
+
+        [HttpPost("AddMember")]
+        public IActionResult AddMember(int projectid, string Username)
+        {
+            try
+            {
+                if (projectid == 0 || String.IsNullOrEmpty(Username))
+                {
+                    return Json(new { success = false, message = "Invalid Request, Check Input!" });
+                }
+
+                Project p = _context.Projects.Find(projectid);
+                if (p == null)
+                {
+                    return Json(new { success = false, message = "Invalid Project!" });
+                }
+
+                if (_usermanager.GetUserId(User) != p.CreatorId)
+                {
+                    return Json(new { success = false, message = "You Are Not Project Owner! Please contact owner for Addition." });
+                }
+
+                IdentityUser member = _usermanager.Users.FirstOrDefault(u => u.NormalizedUserName == Username.ToUpper());
+                if (member == null)
+                {
+                    return Json(new { success = false, message = "User Not Found!" });
+                }
+
+                UserProject userProject = new UserProject();
+                userProject.Project = p;
+                userProject.Member = member;
+
+                _context.UserProjects.Add(userProject);
+                _context.SaveChanges();
+
+                return Json(new { success = true, redirectUrl = Url.Action("ProjectMembers", "Project", new { projectid = projectid }) });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = "An Error Occured While Adding the User. Please Try Again!" });
+            }
+        }
+
+
+
+        [HttpPost("RemoveMember")]
+        public IActionResult RemoveMember(int projectid, string memberid)
+        {
+            try
+            {
+
+                if (projectid == 0 || String.IsNullOrEmpty(memberid))
+                {
+                    return Json(new { success = false, message = "Invalid Request, Check Input!" });
+                }
+
+                Project p = _context.Projects.Find(projectid);
+                if (p == null)
+                {
+                    return Json(new { success = false, message = "Invalid Project!" });
+                }
+
+                if (_usermanager.GetUserId(User) != p.CreatorId)
+                {
+                    return Json(new { success = false, message = "You Are Not Project Owner! Please contact owner for Removal." });
+                }
+
+                IdentityUser member = _usermanager.Users.FirstOrDefault(u => u.Id == memberid);
+                if (member == null)
+                {
+                    return Json(new { success = false, message = "User Not Found!" });
+                }
+
+                UserProject userProject = new UserProject();
+                userProject.Project = p;
+                userProject.Member = member;
+
+                _context.UserProjects.Remove(userProject);
+                _context.SaveChanges();
+
+                return Json(new { success = true, message = member.UserName + " Removed Successfully", redirectUrl = Url.Action("ProjectMembers", "Project", new { projectid = projectid }) });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, error = "An Error Occured While Removing the User. Please Try Again!" });
+            }
+        }
+
+
+
         [HttpDelete("DeleteProjectById/{id}")]
-        //[ValidateAntiForgeryToken]
+        [ValidateAntiForgeryToken]
         public IActionResult DeleteProjectById(int id)
         {
             var project = _context.Projects.Find(id);
 
             if (project == null)
             {
-                return NotFound();
+                return View("Error404");
+            }
+
+            if (_usermanager.GetUserId(User) != project.CreatorId)
+            {
+                return Json(new { success = false, message = "You Are Not Project Owner! Please contact owner for Deletion." });
             }
 
             // Perform any additional checks before deletion if needed
             _context.Projects.Remove(project);
             _context.SaveChanges();
 
-            return NoContent();
+            return Json(new { success = true, message = project.Name + " Deleted Successfully." });
         }
     }
 }

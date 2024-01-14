@@ -11,6 +11,6 @@ namespace TaskManagement.Models
 
         [ValidateNever]
         public Project Project { get; set; }
-        public ICollection<Sprint> Sprints { get; set; }
+        public ICollection<Sprint>? Sprints { get; set; }
     }
 }

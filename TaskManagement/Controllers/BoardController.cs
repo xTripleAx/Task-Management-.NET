@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManagement.Data;
@@ -13,10 +14,12 @@ namespace TaskManagement.Controllers
     {
 
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _usermanager;
 
-        public BoardController(ApplicationDbContext context)
+        public BoardController(ApplicationDbContext context, UserManager<IdentityUser> usermanager)
         {
             _context = context;
+            _usermanager = usermanager;
         }
 
 
@@ -31,20 +34,6 @@ namespace TaskManagement.Controllers
                 return View("Error404");
             }
 
-            var board = _context.Boards
-                .Include(b => b.Project)
-                .Include(b => b.Lists).ThenInclude(list => list.Issues)
-                .FirstOrDefault(b => b.ProjectId == projectid);
-
-            if (board != null)
-            {
-                project = board.Project;
-            }
-            else
-            {
-                return Content("Error No Board"); ;
-            }
-
             //Get the users that belong to this project
             var userIds = _context.UserProjects
                 .Where(x => x.ProjectId == project.ProjectId)
@@ -53,8 +42,23 @@ namespace TaskManagement.Controllers
 
             var projectMembers = _context.Users
                 .Where(user => userIds.Contains(user.Id))
-                .ToList();
+            .ToList();
 
+
+            if(!projectMembers.Any(user => user.Id == _usermanager.GetUserId(User)))
+            {
+                return View("Error404");
+            }
+
+
+            var board = _context.Boards
+                .Include(b => b.Lists).ThenInclude(list => list.Issues)
+                .FirstOrDefault(b => b.ProjectId == projectid);
+
+            if (board == null)
+            {
+                return View("Error404");
+            }
 
             var listsWithIssues = board.Lists.Select(list => new ListWithIssuesModel
             {
@@ -64,10 +68,8 @@ namespace TaskManagement.Controllers
 
             if (listsWithIssues == null)
             {
-                return Content("Error no board data");
+                return View("Error404");
             }
-
-            Console.WriteLine(listsWithIssues.Count());
 
             // Create the ViewModel
             var viewModel = new AllInfoModel
@@ -75,7 +77,7 @@ namespace TaskManagement.Controllers
                 Project = project,
                 Board = board,
                 ListsWithIssues = listsWithIssues,
-                ProjectMemebers = projectMembers
+                ProjectMembers = projectMembers
             };
 
             return View(viewModel);

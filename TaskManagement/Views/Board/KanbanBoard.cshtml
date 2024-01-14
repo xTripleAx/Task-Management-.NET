@@ -22,7 +22,7 @@
     }
 </style>
 
-<h1 class="m-2">@Model.Project.Name</h1>
+<h1 class="m-2">@Model.Project.Name / Board</h1>
 
 <div class="board">
 
@@ -170,7 +170,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="IssueAssignee">Assignee</label>
-                        <select type="text" class="form-control" id="IssueAssignee" asp-items="Model.ProjectMemebers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
+                        <select type="text" class="form-control" id="IssueAssignee" asp-items="Model.ProjectMembers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="IssueList">List</label>
@@ -209,7 +209,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="EditIssueAssignee">Assignee</label>
-                        <select type="text" class="form-control" id="EditIssueAssignee" asp-items="Model.ProjectMemebers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
+                        <select type="text" class="form-control" id="EditIssueAssignee" asp-items="Model.ProjectMembers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="EditIssueList">List</label>
