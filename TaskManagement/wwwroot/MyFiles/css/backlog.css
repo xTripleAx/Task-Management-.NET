@@ -1,0 +1,22 @@
+﻿.issue-box {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.issue-info {
+    flex: 1;
+}
+
+.issue-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.scrollcontainer {
+    max-height: 87.3vh;
+    overflow-y: scroll;
+}

@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.IO.IsolatedStorage;
 using System.Security.Claims;
 using TaskManagement.Data;
@@ -12,10 +14,12 @@ namespace TaskManagement.Controllers
     public class IssueController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _usermanager;
 
-        public IssueController(ApplicationDbContext context)
+        public IssueController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
         [HttpPost("Create")]
@@ -24,6 +28,10 @@ namespace TaskManagement.Controllers
         {
             try
             {
+                if(String.IsNullOrEmpty(newIssue.IssueName) || String.IsNullOrEmpty(newIssue.IssueDescription) || String.IsNullOrEmpty(newIssue.AssigneeId))
+                {
+                    return Json(new { success = false, message = "Invalid data. Please check your input." });
+                }
 
                 Project project = _context.Projects.Find(projectid);
 
@@ -32,18 +40,48 @@ namespace TaskManagement.Controllers
                     return Json(new { success = false, message = "Project Not Found" });
                 }
 
+                Backlog backlog = _context.Backlogs.FirstOrDefault(b => b.ProjectId == projectid);
+
                 var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                var userIds = _context.UserProjects
+                    .Where(x => x.ProjectId == project.ProjectId)
+                    .Select(x => x.MemberId)
+                    .ToList();
+
+                var projectMembers = _context.Users
+                    .Where(user => userIds.Contains(user.Id))
+                    .ToList();
+
+
+                if (!projectMembers.Any(user => user.Id == _usermanager.GetUserId(User)))
+                {
+                    return Json(new { success = false, message = "You are not a member of this project!" });
+                }
 
 
                 if (newIssue == null)
                 {
-                    return Json(new { success = false, message = "Issue Not Found" });
+                    return Json(new { success = false, message = "Issue Invalid!" });
                 }
 
                 newIssue.ReporterId = userid;
                 newIssue.DateCreated = DateTime.Now;
 
-                Console.WriteLine(newIssue.ReporterId);
+                if(newIssue.ListId == 0)
+                {
+                    newIssue.BacklogId = backlog.BacklogId;
+                    newIssue.ListId = null;
+                }
+                else
+                {
+                    List l = _context.Lists.Find(newIssue.ListId);
+                    IEnumerable<Issue> ListIssues = _context.Issues.Where(I => I.ListId == newIssue.ListId);
+                    if(l.ColumnLimit <= ListIssues.Count())
+                    {
+                        return Json(new { success = false, message = "List Reached Column Limit!" });
+                    }
+                }
 
                 if (ModelState.IsValid)
                 {
@@ -58,6 +96,7 @@ namespace TaskManagement.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 return Json(new { success = false, message = "An Error occured while creating the issue." });
             }
 
@@ -71,7 +110,8 @@ namespace TaskManagement.Controllers
             try
             {
                 var issue = _context.Issues.FirstOrDefault(l => l.IssueId == newIssue.IssueId);
-                if (issue == null)
+                var backlog = _context.Backlogs.FirstOrDefault(b => b.ProjectId == projectid);
+                if (issue == null || backlog == null)
                 {
                     return Json(new { success = false, message = "Issue Not Found" });
                 }
@@ -80,7 +120,16 @@ namespace TaskManagement.Controllers
                     issue.IssueName = newIssue.IssueName;
                     issue.IssueDescription = newIssue.IssueDescription;
                     issue.AssigneeId = newIssue.AssigneeId;
-                    issue.ListId = newIssue.ListId;
+                    if (issue.ListId == 0)
+                    {
+                        issue.BacklogId = backlog.BacklogId;
+                        issue.ListId = null;
+                    }
+                    else
+                    {
+                        issue.ListId = newIssue.ListId;
+                        issue.BacklogId = null;
+                    }
 
                     _context.SaveChanges();
 
@@ -89,6 +138,7 @@ namespace TaskManagement.Controllers
             }
             catch(Exception ex)
             {
+                Console.WriteLine(ex.ToString());
                 return Json(new { success = false, message = "An Error occured while editing the issue." });
             }
         }

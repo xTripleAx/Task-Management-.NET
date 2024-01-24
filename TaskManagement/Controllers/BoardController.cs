@@ -55,7 +55,11 @@ namespace TaskManagement.Controllers
                 .Include(b => b.Lists).ThenInclude(list => list.Issues)
                 .FirstOrDefault(b => b.ProjectId == projectid);
 
-            if (board == null)
+            var backlog = _context.Backlogs
+                .Include(b => b.Issues)
+                .FirstOrDefault(b => b.ProjectId == projectid);
+
+            if (board == null || backlog == null)
             {
                 return View("Error404");
             }
@@ -65,6 +69,8 @@ namespace TaskManagement.Controllers
                 List = list,
                 Issues = list.Issues.ToList()
             }).ToList();
+
+            var backlogissues = backlog.Issues.ToList();
 
             if (listsWithIssues == null)
             {
@@ -76,7 +82,9 @@ namespace TaskManagement.Controllers
             {
                 Project = project,
                 Board = board,
+                Backlog = backlog,
                 ListsWithIssues = listsWithIssues,
+                BacklogIssues = backlogissues,
                 ProjectMembers = projectMembers
             };
 

@@ -13,6 +13,10 @@ namespace TaskManagement.Models.ViewModels
     {
         public Board Board { get; set; }
 
+        public Backlog Backlog { get; set; }
+
+        public IEnumerable<Issue> BacklogIssues { get; set; }
+
         public IEnumerable<ListWithIssuesModel> ListsWithIssues { get; set; }
 
         public IEnumerable<IdentityUser> ProjectMembers { get; set; }

@@ -157,3 +157,74 @@ function RemoveMember(memberid) {
         }
     });
 }
+
+
+
+
+
+
+function handleOwnerLeave() {
+    confirmOwnerLeave();
+}
+
+
+function confirmOwnerLeave() {
+    Swal.fire({
+        title: 'Leave Project?',
+        text: `Are You sure you want to leave ? All Data will be lost !`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, Leave!',
+        cancelButtonText: 'No, Don\'t Leave'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            OwnerLeave();
+        } else {
+        }
+    });
+}
+
+
+
+function OwnerLeave() {
+    var token = $('input[name="__RequestVerificationToken"]').val();
+    // Use AJAX to send data to your controller
+    $.ajax({
+        type: 'DELETE',
+        url: '/Project/DeleteProjectById/' + projectid,
+        data: {
+            __RequestVerificationToken: token
+        },
+        success: function (result) {
+            if (result.success) {
+                // Handle success (e.g., refresh the page or update the lists dynamically)
+                Swal.fire({
+                    icon: 'success',
+                    title: result.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                // Use setTimeout to delay the redirection
+                setTimeout(function () {
+                    window.location.href = '/Project/All';
+                }, 1500);
+            }
+            else {
+                // Handle failure
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: result.message,
+                });
+            }
+        },
+        error: function (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong!',
+            });
+            console.log(error);
+        }
+    });
+}

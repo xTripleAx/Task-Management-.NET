@@ -12,7 +12,40 @@ body {
     user-select: none;
 }
 
+.listbody{
+    min-height: 300px;
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
 .anissue {
     position: relative;
     display:flex;
+}
+
+.row.Lists::-webkit-scrollbar {
+    height: 10px;
+}
+
+.row.Lists::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 8px;
+}
+
+.row.Lists::-webkit-scrollbar-track {
+    display: none;
+}
+
+.Lists {
+    padding-bottom: 10px;
+}
+
+.listbody::-webkit-scrollbar {
+    width: 5px;
+}
+
+.listbody::-webkit-scrollbar-thumb {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }

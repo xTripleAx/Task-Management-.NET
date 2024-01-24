@@ -302,6 +302,9 @@ namespace TaskManagement.Data.Migrations
                     b.Property<string>("AssigneeId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int?>("BacklogId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
@@ -313,7 +316,7 @@ namespace TaskManagement.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ListId")
+                    b.Property<int?>("ListId")
                         .HasColumnType("int");
 
                     b.Property<string>("ReporterId")
@@ -329,6 +332,8 @@ namespace TaskManagement.Data.Migrations
                     b.HasKey("IssueId");
 
                     b.HasIndex("AssigneeId");
+
+                    b.HasIndex("BacklogId");
 
                     b.HasIndex("ListId");
 
@@ -562,11 +567,13 @@ namespace TaskManagement.Data.Migrations
                         .WithMany()
                         .HasForeignKey("AssigneeId");
 
+                    b.HasOne("TaskManagement.Models.Backlog", "Backlog")
+                        .WithMany("Issues")
+                        .HasForeignKey("BacklogId");
+
                     b.HasOne("TaskManagement.Models.List", "List")
                         .WithMany("Issues")
-                        .HasForeignKey("ListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ListId");
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Reporter")
                         .WithMany()
@@ -575,6 +582,8 @@ namespace TaskManagement.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Assignee");
+
+                    b.Navigation("Backlog");
 
                     b.Navigation("List");
 
@@ -643,6 +652,8 @@ namespace TaskManagement.Data.Migrations
 
             modelBuilder.Entity("TaskManagement.Models.Backlog", b =>
                 {
+                    b.Navigation("Issues");
+
                     b.Navigation("Sprints");
                 });
 

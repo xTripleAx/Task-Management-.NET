@@ -54,7 +54,7 @@ function DeleteProject(projectid) {
                 title: 'Oops...',
                 text: 'Something went wrong!',
             });
-            console.log(error.message);
+            console.log(error);
         }
     });
 }

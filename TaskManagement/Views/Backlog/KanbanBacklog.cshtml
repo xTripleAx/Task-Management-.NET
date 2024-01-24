@@ -1,23 +1,140 @@
-﻿@{
+﻿@model TaskManagement.Models.ViewModels.AllInfoModel
+@{
     Layout = "_ProjectElementsLayout";
 }
+
+<link rel="stylesheet" href="~/MyFiles/css/backlog.css"/>
 
 <h1 class="m-2">@Model.Project.Name / Backlog</h1>
 
 <div class="container mt-4">
-    <h1 class="mb-3">@Model.Project.Name / Backlog</h1>
 
-    <div class="board">
-        <!-- Tasks for the first container go here -->
+    <div class="board container bg-light p-3 rounded border">
+        <h3>Board Issues</h3>
+        @foreach (var listWithIssues in Model.ListsWithIssues)
+        {
+            @foreach (var issue in listWithIssues.Issues)
+            {
+                <div class="issue-box">
+                    <div class="issue-info">
+                        <div class="issue-name">@issue.IssueName</div>
+                    </div>
+                    <span class="issue-actions">
+                        <i class="fa-solid fa-trash" onclick="confirmIssueDelete(@issue.IssueId)"></i>
+                        <i class="fa-solid fa-pen" onclick="openIssueEditModal('@issue.IssueId','@issue.IssueName','@issue.IssueDescription','@issue.AssigneeId','@issue.ListId')"></i>
+                    </span>
+                </div>
+            }
+        }
     </div>
 
     <hr class="my-4">
 
-    <div class="Backlog">
-        <!-- Tasks for the second container go here -->
+    <div class="backlog container bg-light p-3 rounded border">
+        <h3>Backlog Issues</h3>
+        @foreach (var backlogIssue in Model.BacklogIssues)
+        {
+            <div class="issue-box">
+                <div class="issue-info">
+                    <div class="issue-name">@backlogIssue.IssueName</div>
+                </div>
+                <span class="issue-actions">
+                    <i class="fa-solid fa-trash" onclick="confirmIssueDelete(@backlogIssue.IssueId)"></i>
+                    <i class="fa-solid fa-pen" onclick="openIssueEditModal('@backlogIssue.IssueId','@backlogIssue.IssueName','@backlogIssue.IssueDescription','@backlogIssue.AssigneeId','@backlogIssue.ListId')"></i>
+                </span>
+            </div>
+        }
     </div>
 
     <!-- Create Button Dropdown -->
-    <button class="btn btn-dark">Create Issue</button>
+    <button class="btn btn-dark mt-2 mb-2" data-bs-toggle="modal" data-bs-target="#createIssueModal">Create Issue</button>
 
 </div>
+
+
+<!-- Create Issue Modal -->
+<div class="modal fade" id="createIssueModal" tabindex="-1" aria-labelledby="createIssueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="createIssueModalLabel">Create Issue</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Create Issue Form -->
+                <form id="createIssueForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="IssueName" class="form-label">Issue Name</label>
+                        <input type="text" class="form-control" id="IssueName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="IssueDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="IssueDescription" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="IssueAssignee">Assignee</label>
+                        <select type="text" class="form-control" id="IssueAssignee" asp-items="Model.ProjectMembers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="IssueList">List</label>
+                        <select type="text" class="form-control" id="IssueList" asp-items="Model.ListsWithIssues.Select(m => new SelectListItem { Value = m.List.ListId.ToString(), Text = m.List.Name })">
+                            <option value="0">Keep In Backlog</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="createIssue()">Create Issue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Edit Issue Modal -->
+<div class="modal fade" id="EditIssueModal" tabindex="-1" aria-labelledby="EditIssueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="EditIssueModalLabel">Edit Issue</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Edit Issue Form -->
+                <form id="EditIssueForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label for="EditIssueName" class="form-label">Issue Name</label>
+                        <input type="text" class="form-control" id="EditIssueName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="EditIssueDescription" class="form-label">Description</label>
+                        <input type="text" class="form-control" id="EditIssueDescription" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="EditIssueAssignee">Assignee</label>
+                        <select type="text" class="form-control" id="EditIssueAssignee" asp-items="Model.ProjectMembers.Select(m => new SelectListItem { Value = m.Id, Text = m.UserName })"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="EditIssueList">List</label>
+                        <select type="text" class="form-control" id="EditIssueList" asp-items="Model.ListsWithIssues.Select(m => new SelectListItem { Value = m.List.ListId.ToString(), Text = m.List.Name })">
+                            <option value="0">Keep In Backlog</option>
+                        </select>
+                    </div>
+                    <input type="hidden" id="editIssueId" value="">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editIssue()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var projectid = @Model.Project.ProjectId;
+</script>
+<script src="~/MyFiles/js/KanbanBacklog.js"></script>

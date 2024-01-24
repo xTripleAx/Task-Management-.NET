@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    Layout = "_Layout";
+}
+
+
+<div class="container">
+    <h1 class="mb-4">Users</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <table id="Users" class="table table-striped responsive">
+                <thead>
+                    <tr>
+                        <th>UserName</th>
+                        <th>User Email</th>
+                        <th>Phone Number</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+@section scripts {
+    <script>
+        $(document).ready(function () {
+            var table = $('#Users').DataTable({
+                ajax: {
+                    url: '/api/User',
+                    dataSrc: ''
+                },
+                columns: [
+                    {
+                        data: 'UserName',
+                        render: function (data, type, user) {
+                            return user.userName
+                        }
+                    },
+                    {
+                        data: 'email',
+                        render: function (data, type, user) {
+                            return user.email
+                        }
+                    },
+                    {
+                        data: 'creator',
+                        render: function (data, type, user) {
+                            if (user.phoneNumber != null) {
+                                return user.phoneNumber
+                            }
+                            else {
+                                var message = "No Phone Number"
+                                return message;
+                            }
+                        }
+                    }
+                ],
+            });
+
+        });
+
+
+    </script>
+}

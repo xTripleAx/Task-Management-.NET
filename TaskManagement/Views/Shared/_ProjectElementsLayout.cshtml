@@ -17,10 +17,10 @@
     <link rel="stylesheet" href="~/MyFiles/css/board.css" />
 
 </head>
-<body id="body-pd">
+<body id="body-pd" class="">
 
 
-    <header>
+    <header id="navnav">
         <partial name="_NavbarPartial" />
     </header>
 
@@ -28,11 +28,11 @@
     <div class="container-fluid">
         
         <div class="row">
-            <div class="col-md-2 border-end" id="sidebar" style="height: 100vh;">
+            <div class="col-md-2 border-end border-bottom" id="sidebar" style="height: 87.3vh;">
                 @await Html.PartialAsync("_ProjectSideBarPartial", Model.Project)
             </div>
 
-            <div class="col-md-10" id="content">
+            <div class="col-md-10 scrollcontainer" id="content">
                 <button id="toggleSidebarBtn" class="btn btn-dark mt-1"><i class="fa-solid fa-bars"></i></button>
                 <main role="main">
                     @RenderBody()

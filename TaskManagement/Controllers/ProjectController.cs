@@ -347,23 +347,31 @@ namespace TaskManagement.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeleteProjectById(int id)
         {
-            var project = _context.Projects.Find(id);
-
-            if (project == null)
+            try
             {
-                return View("Error404");
-            }
+                var project = _context.Projects.Find(id);
 
-            if (_usermanager.GetUserId(User) != project.CreatorId)
+                if (project == null)
+                {
+                    return View("Error404");
+                }
+
+                if (_usermanager.GetUserId(User) != project.CreatorId)
+                {
+                    return Json(new { success = false, message = "You Are Not Project Owner! Please contact owner for Deletion." });
+                }
+
+                // Perform any additional checks before deletion if needed
+                _context.Projects.Remove(project);
+                _context.SaveChanges();
+
+                return Json(new { success = true, message = project.Name + " Deleted Successfully." });
+            }
+            catch(Exception ex)
             {
-                return Json(new { success = false, message = "You Are Not Project Owner! Please contact owner for Deletion." });
+                Console.WriteLine(ex.Message);
+                return Json(new { success = false, error = "An Error Occured While Deleting the Project. Please Try Again!" });
             }
-
-            // Perform any additional checks before deletion if needed
-            _context.Projects.Remove(project);
-            _context.SaveChanges();
-
-            return Json(new { success = true, message = project.Name + " Deleted Successfully." });
         }
     }
 }

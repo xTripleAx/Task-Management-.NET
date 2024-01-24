@@ -1,5 +1,6 @@
 ﻿using Humanizer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -15,10 +16,12 @@ namespace TaskManagement.Controllers
     {
 
         private readonly ApplicationDbContext _context;
+        private readonly UserManager<IdentityUser> _usermanager;
 
-        public ListController(ApplicationDbContext context)
+        public ListController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
         {
             _context = context;
+            _usermanager = userManager;
         }
 
         [HttpPost("Create")]
@@ -29,20 +32,30 @@ namespace TaskManagement.Controllers
             {
                 if (projectid == 0)
                 {
-                    return Json(new { success = false, message = "Project Id Error" });
+                    return Json(new { success = false, message = "Project Does Not Exist" });
                 }
 
-                if (newList == null)
+                Project p = _context.Projects.Find(projectid);
+
+                if (p.CreatorId == _usermanager.GetUserId(User))
                 {
-                    return Json(new { success = false, message = "List Not Found" });
+                    if (newList == null)
+                    {
+                        return Json(new { success = false, message = "Invalid List Data" });
+                    }
+
+                    if (ModelState.IsValid)
+                    {
+                        _context.Lists.Add(newList);
+                        _context.SaveChanges();
+
+                        return Json(new { success = true, message = "List Created Successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+
+                    }
                 }
-
-                if (ModelState.IsValid)
+                else
                 {
-                    _context.Lists.Add(newList);
-                    _context.SaveChanges();
-
-                    return Json(new { success = true, message = "List Created Successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                    return Json(new { success = false, message = "You are not owner of this project! Contact Owner to add Lists." });
                 }
 
                 //If ModelState is not valid, return an error message
@@ -64,20 +77,42 @@ namespace TaskManagement.Controllers
         {
             try
             {
-                // Fetch the existing list from the database
-                var existingList = _context.Lists.Find(newList.ListId);
-
-                if (existingList != null)
+                if (projectid == 0)
                 {
-                    // Update the properties with the new values
-                    existingList.Name = newList.Name;
-                    existingList.ColumnLimit = newList.ColumnLimit;
-                    existingList.isListForFinish = newList.isListForFinish;
+                    return Json(new { success = false, message = "Project Does Not Exist" });
+                }
 
-                    // Save changes to the database
-                    _context.SaveChanges();
+                Project p = _context.Projects.Find(projectid);
 
-                    return Json(new { success = true, message = "List updated successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                IEnumerable<Issue> ListIssues = _context.Issues.Where(I => I.ListId == newList.ListId);
+
+                if(ListIssues.Count() > newList.ColumnLimit)
+                {
+                    return Json(new { success = false, message = "Column Limit is Lower Than Found Issues!" });
+                }
+
+
+                if (p.CreatorId == _usermanager.GetUserId(User))
+                {
+                    // Fetch the existing list from the database
+                    var existingList = _context.Lists.Find(newList.ListId);
+
+                    if (existingList != null)
+                    {
+                        // Update the properties with the new values
+                        existingList.Name = newList.Name;
+                        existingList.ColumnLimit = newList.ColumnLimit;
+                        existingList.isListForFinish = newList.isListForFinish;
+
+                        // Save changes to the database
+                        _context.SaveChanges();
+
+                        return Json(new { success = true, message = "List updated successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                    }
+                }
+                else
+                {
+                    return Json(new { success = false, message = "You are not owner of this project! Contact Owner to Edit Lists." });
                 }
 
                 return Json(new { success = false, message = "List not found" });
@@ -97,20 +132,32 @@ namespace TaskManagement.Controllers
         {
             try
             {
-                var existingList = _context.Lists.Find(listId);
-
-                if (existingList != null)
+                if (projectid == 0)
                 {
-                    // Delete the List
-                    _context.Lists.Remove(existingList);
-
-                    // Save changes to the database
-                    _context.SaveChanges();
-
-                    return Json(new { success = true, message = "List deleted successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                    return Json(new { success = false, message = "Project Does Not Exist" });
                 }
 
-                return Json(new { success = false, message = "List not found" });
+                Project p = _context.Projects.Find(projectid);
+
+                if (p.CreatorId == _usermanager.GetUserId(User))
+                {
+                    var existingList = _context.Lists.Find(listId);
+
+                    if (existingList != null)
+                    {
+                        // Delete the List
+                        _context.Lists.Remove(existingList);
+
+                        // Save changes to the database
+                        _context.SaveChanges();
+
+                        return Json(new { success = true, message = "List deleted successfully", redirectUrl = Url.Action("KanbanBoard", "Board", new { projectid = projectid }) });
+                    }
+                    return Json(new { success = false, message = "List not found" });
+                }
+
+                return Json(new { success = false, message = "You are not owner of this project! Contact Owner to Delete Lists." });
+
             }
             catch (Exception ex)
             {

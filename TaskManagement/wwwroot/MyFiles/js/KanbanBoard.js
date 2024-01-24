@@ -150,19 +150,28 @@ function deleteList(listId) {
             __RequestVerificationToken: token
         },
         success: function (result) {
-            // Handle success (e.g., refresh the page or update the lists dynamically)
-            Swal.fire({
-                icon: 'success',
-                title: 'List Deleted Successfully',
-                showConfirmButton: false,
-                timer: 1500
-            });
-            // Use setTimeout to delay the redirection
-            setTimeout(function () {
-                if (result.redirectUrl) {
-                    window.location.href = result.redirectUrl;
-                }
-            }, 1500);
+            if (result.success) {
+                // Handle success (e.g., refresh the page or update the lists dynamically)
+                Swal.fire({
+                    icon: 'success',
+                    title: result.message,
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                // Use setTimeout to delay the redirection
+                setTimeout(function () {
+                    if (result.redirectUrl) {
+                        window.location.href = result.redirectUrl;
+                    }
+                }, 1500);
+            }
+            else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops',
+                    text: result.message
+                });
+            }
         },
         error: function (error) {
             Swal.fire({
@@ -309,8 +318,13 @@ function openIssueDetailsModal(IssueName, IssueDesc, IssueAssignee, IssueList, I
     $('#DetailsIssueAssignee').text(IssueAssignee);
     $('#DetailsIssueList').text(IssueList);
 
-    var dateObject = new Date(IssueDate);
+    console.log(IssueDate);
+    var reformattedDate = IssueDate.replace(/(\d{1,2})\/(\d{1,2})\/(\d{4})/, '$3-$2-$1');
+    console.log(reformattedDate)
+    var dateObject = new Date(Date.parse(reformattedDate));
+    console.log(dateObject);
     var formattedDate = dateObject.toISOString().split('T')[0];
+    console.log(formattedDate);
     $('#DetailsIssueDate').text(formattedDate);
 
     // Show the Issue Details modal

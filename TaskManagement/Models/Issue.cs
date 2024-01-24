@@ -13,16 +13,24 @@ namespace TaskManagement.Models
         public DateTime DateCreated { get; set; }
         public bool? blocks { get; set; }
         public bool? blockedBy { get; set; }
+
         [ValidateNever]
         public string ReporterId { get; set; }
         [ValidateNever]
         public IdentityUser Reporter { get; set; }
-        public int ListId { get; set; }
+
+        public int? ListId { get; set; }
         [ValidateNever]
         public List List {  get; set; }
+
+        public int? BacklogId { get; set; }
+        [ValidateNever]
+        public Backlog Backlog { get; set; }
+
         public string? AssigneeId { get; set; }
         [ValidateNever]
         public IdentityUser? Assignee { get; set; }
+
         [ValidateNever]
         public ICollection<Comment> Comments { get; set; }
     }

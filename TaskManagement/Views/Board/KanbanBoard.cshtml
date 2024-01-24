@@ -3,25 +3,6 @@
     Layout = "_ProjectElementsLayout";
 }
 
-<style>
-    .row.Lists::-webkit-scrollbar {
-        height: 10px;
-    }
-
-    .row.Lists::-webkit-scrollbar-thumb {
-        background-color: #888;
-        border-radius: 8px;
-    }
-
-    .row.Lists::-webkit-scrollbar-track {
-        display: none;
-    }
-
-    .row.Lists{
-        padding-bottom:10px;
-    }
-</style>
-
 <h1 class="m-2">@Model.Project.Name / Board</h1>
 
 <div class="board">
@@ -174,7 +155,8 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label" for="IssueList">List</label>
-                        <select type="text" class="form-control" id="IssueList" asp-items="Model.ListsWithIssues.Select(m => new SelectListItem { Value = m.List.ListId.ToString(), Text = m.List.Name })"></select>
+                        <select type="text" class="form-control" id="IssueList" asp-items="Model.ListsWithIssues.Select(m => new SelectListItem { Value = m.List.ListId.ToString(), Text = m.List.Name })">
+                        </select>
                     </div>
                 </form>
             </div>
